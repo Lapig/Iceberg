@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.TextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:contextClickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:hint="meme"
+    android:visibility="visible"
+    android:inputType="text"
+    app:counterEnabled="false">
+
+    <EditText
+        android:id="@+id/editText"
+        style="@style/Widget.AppCompat.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="95dp"
+        android:contextClickable="true"
+        android:ems="10"
+        android:enabled="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:hint="enter ur favorite meme"
+        android:inputType="text"
+        android:linksClickable="true"
+        android:longClickable="true"
+        android:textDirection="inherit"
+        android:textIsSelectable="true">
+
+        <requestFocus />
+    </EditText>
+
+</android.support.design.widget.TextInputLayout>
