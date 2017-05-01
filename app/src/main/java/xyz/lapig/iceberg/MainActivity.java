@@ -11,7 +11,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.loopj.android.http.TextHttpResponseHandler;
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HttpStatus;
+
+import org.json.JSONArray;
+
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,19 +33,21 @@ public class MainActivity extends AppCompatActivity {
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
                 try {
-                    RestClient.get("/musiclog.txt", null, new TextHttpResponseHandler() {
+                    Snackbar.make(view, "Attempting", Snackbar.LENGTH_SHORT)
+                            .setAction("Action", null).show();
+                    RestClient.get("", null, new JsonHttpResponseHandler(){
                         @Override
-                        public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
+                        public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
                             Snackbar.make(view, "FAILURE", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
 
                         }
 
                         @Override
-                        public void onSuccess(int i, cz.msebera.android.httpclient.Header[] headers, String s) {
+                        public void onSuccess(int i, Header[] headers, JSONArray  response) {
                             Snackbar.make(view, "SUCCESS", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
-                            ((TextView)findViewById(R.id.textView)).setText(s);
+                            ((TextView)findViewById(R.id.textView)).setText(response.toString());
                         }
                     });
                 }
