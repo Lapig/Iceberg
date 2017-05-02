@@ -11,12 +11,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HttpStatus;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
-import com.loopj.android.http.JsonHttpResponseHandler;
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
                 try {
                     Snackbar.make(view, "Attempting", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();
@@ -48,6 +46,31 @@ public class MainActivity extends AppCompatActivity {
                             Snackbar.make(view, "SUCCESS", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
                             ((TextView)findViewById(R.id.textView)).setText(response.toString());
+                        }
+
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+                            Snackbar.make(view, "SUCCESS", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            //((TextView)findViewById(R.id.textView)).setText(response.toString());
+
+                            String curr="";
+                            String fullText="";
+                            JSONArray arr;
+                            try {
+                                arr=response.getJSONObject("recenttracks").getJSONArray("track");
+                                for (int i = 0; i < arr.length(); i++){
+                                    curr = arr.getJSONObject(i).getJSONObject("artist").getString("#text");
+                                    curr+="\n" + arr.getJSONObject(i).getString("name");
+                                    fullText=(arr.length()-i) + "." + curr + "\n\n"+fullText;
+
+                                    //response.remove("track");
+                                }
+                                ((TextView)findViewById(R.id.textView)).setText(fullText);
+                            }
+                            catch(Exception e){
+                               ((TextView)findViewById(R.id.textView)).setText("exception hell yeah");
+                            }
                         }
                     });
                 }
