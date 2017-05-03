@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Iceberg.iml" filepath="$PROJECT_DIR$/Iceberg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lapig.iceberg/lapig.iceberg.iml" filepath="$PROJECT_DIR$/lapig.iceberg/lapig.iceberg.iml" />
     </modules>
   </component>
 </project>

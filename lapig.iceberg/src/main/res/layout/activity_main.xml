@@ -29,6 +29,7 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
+        style="@style/Widget.Design.FloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -46,12 +47,14 @@
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginLeft="64px"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:isScrollContainer="true"
             android:scrollHorizontally="false"
             android:scrollbars="vertical"
             android:text="Click button pray 4 rest"
+            android:textAlignment="viewStart"
             tools:text="Click button pray 4 rest" />
     </ScrollView>
 </android.support.design.widget.CoordinatorLayout>
