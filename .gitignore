@@ -38,3 +38,4 @@ captures/
 
 # Keystore files
 *.jks
+lapig.iceberg/src/main/res/values/tokens.xml
