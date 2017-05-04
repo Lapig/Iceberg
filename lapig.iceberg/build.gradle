@@ -16,7 +16,6 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
         }
@@ -33,7 +32,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
     compile 'com.android.support:design:25.3.1'
-    testCompile 'junit:junit:4.12'
     compile files('libs/android-async-http-1.4.9.jar')
     compile 'cz.msebera.android:httpclient:4.4.1.2'
 }

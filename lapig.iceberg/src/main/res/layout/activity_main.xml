@@ -4,23 +4,64 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
     android:isScrollContainer="true"
     android:scrollbars="vertical"
     tools:context="xyz.lapig.iceberg.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="41dp"
+        android:layout_gravity="top"
+        android:clipChildren="false"
+        android:foregroundGravity="top"
+        android:gravity="top"
+        android:minHeight="9dp"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:layout_anchorGravity="top">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
+            android:clipChildren="true"
+            android:clipToPadding="false"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
+
+    <android.support.design.widget.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:clipToPadding="false"
+        android:contextClickable="true"
+        android:measureAllChildren="false"
+        android:paddingTop="@android:dimen/app_icon_size">
+
+        <android.support.design.widget.TabItem
+            android:id="@string/songtab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:onClick="@android:string/httpErrorBadUrl"
+            android:text="@string/songtab" />
+
+        <android.support.design.widget.TabItem
+            android:id="@string/albumtab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="2dp"
+            android:text="@string/albumtab" />
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="2dp"
+            android:text="Right" />
+    </android.support.design.widget.TabLayout>
 
     <include
         android:id="@+id/include"
@@ -39,7 +80,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_marginTop="100dp"
         android:clipToPadding="false"
         android:fillViewport="true">
 
@@ -54,7 +95,7 @@
             android:scrollHorizontally="false"
             android:scrollbars="vertical"
             android:text="Click button pray 4 rest"
-            android:textAlignment="viewStart"
             tools:text="Click button pray 4 rest" />
     </ScrollView>
+
 </android.support.design.widget.CoordinatorLayout>
