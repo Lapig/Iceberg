@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/Iceberg.iml" filepath="$PROJECT_DIR$/Iceberg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lapig.iceberg/lapig.iceberg.iml" filepath="$PROJECT_DIR$/lapig.iceberg/lapig.iceberg.iml" />
-    </modules>
-  </component>
-</project>
