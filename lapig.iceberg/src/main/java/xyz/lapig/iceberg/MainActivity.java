@@ -13,14 +13,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.HashMap;
 
-import cz.msebera.android.httpclient.Header;
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,46 +30,18 @@ public class MainActivity extends AppCompatActivity {
         homeView = (CoordinatorLayout) findViewById(R.id.home_view);
         parsers=new HashMap<>();
 
+        final LastFMContainer recent=new LastFMContainer(getString(R.string.recent),"lapigr",getString(R.string.api_key));
+        final LastFMContainer albums=new LastFMContainer(getString(R.string.albums),"lapigr",getString(R.string.api_key));
+
+        parsers.put("recentTracks", recent);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(final View view) {
-            try {
-                Snackbar.make(view, "Attempting", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
-                RestClient.get("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=lapigr&api_key="+getString(R.string.api_key)+"&format=json&limit=30\"", null, new JsonHttpResponseHandler(){
-                    @Override
-                    public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                        Snackbar.make(view, "FAILURE", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    }
-
-                    @Override
-                    public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
-                        Snackbar.make(view, "FAILURE", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    }
-
-                    @Override
-                    public void onSuccess(int i, Header[] headers, JSONArray response) {
-                        Snackbar.make(view, "unexpected jsonarray response", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        ((TextView)findViewById(R.id.textView)).setText(response.toString());
-                    }
-
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-                        Snackbar.make(view, "SUCCESS", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-
-                        LastFMContainer recent=new LastFMContainer(response, "http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=lapigr&api_key="+getString(R.string.api_key)+"&format=json&limit=30");
-                        parsers.put("recentTracks", recent);
-                        ((TextView) findViewById(R.id.textView)).setText(recent.toString());
-                    }
-                });
-            }
-            catch(Exception e){
-            }
-        }});
+            @Override
+            public void onClick(final View view) {
+                snackAttack("Attempting");
+                ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+            }}
+        );
 
         final TabLayout tab_holder= (TabLayout) findViewById(R.id.tab_bar);
         tab_holder.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -84,9 +50,11 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         snackAttack("one");
+                        ((TextView)findViewById(R.id.textView)).setText(recent.toString());
                         break;
                     case 1:
                         snackAttack("two");
+                        ((TextView)findViewById(R.id.textView)).setText(albums.toString());
                         break;
                     case 2:
                         snackAttack("three");
@@ -100,7 +68,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {}
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+                switch(tab.getPosition()){
+                    case 0:
+                        snackAttack("one");
+                        ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                        break;
+                    case 1:
+                        snackAttack("two");
+                        ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                        break;
+                    case 2:
+                        snackAttack("three");
+                        break;
+                    default:
+                        snackAttack("default");
+                        break;
+                }
+            }
         });
     }
     public void snackAttack(String msg){
