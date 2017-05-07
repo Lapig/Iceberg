@@ -11,26 +11,29 @@ import xyz.lapig.iceberg.RestClient;
 public class LastFMContainer {
     private JSONObject rootJSON;
     private JSONArray rootJSONarr;
-    private String str;
+    private String parsed;
     private String url;
     private String fetch_type, sub_key;
 	public LastFMContainer(JSONObject base, String uri){
         rootJSON=base;
-        str="";
+        parsed="";
         url+=uri;
         fetch_type="recenttracks";  sub_key="track";
     }
     public LastFMContainer(String type, String user, String key){
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json";
-        str="";
+        parsed="";
         if(type.equals("user.gettopalbums")){
             fetch_type="topalbums"; sub_key="album";
         }
         else if(type.equals("user.getrecenttracks")){
             fetch_type="recenttracks";  sub_key="track";
         }
+        else if(type.equals("user.gettopartists")){
+            fetch_type="topartists"; sub_key="artist";
+        }
         else{
-            fetch_type="error"; sub_key="error";
+            return;
         }
         try {
             RestClient.get(url, null, new JsonHttpResponseHandler(){
@@ -51,7 +54,6 @@ public class LastFMContainer {
             });
         }
         catch(Exception e){
-            str="failure";
             System.err.println(e.toString());
         }
     }
@@ -59,26 +61,25 @@ public class LastFMContainer {
         return rootJSON.toString();
     }
     public String toString(){
-        if(str.equals("") || str.equals("obj")){
+        if(parsed.equals("") || parsed.equals("obj")){
             String curr=""; String fullText = "";
            try {
                JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
                for (int i = 0; i < arr.length(); i++) {
                    curr = arr.getJSONObject(i).getJSONObject("artist").getString("#text");
                    curr += "\n" + arr.getJSONObject(i).getString("name");
-                   fullText += (i+1) + "." + curr + "\n\n";
+                   fullText += (i+1) + "." + curr + "\n";
                }
-               str=fullText;
+               parsed=fullText;
            }
            catch(Exception e){
-               System.err.println("JSON parse error");
                return toAlbumsString();
            }
         }
-        return str;
+        return parsed;
     }
     public String toAlbumsString(){
-        if(str.equals("") || str.equals("obj")){
+        if(parsed.equals("") || parsed.equals("obj")){
             String curr=""; String fullText = "";
             try {
                 JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -86,12 +87,12 @@ public class LastFMContainer {
                     curr = arr.getJSONObject(i).getString("name")+"  "+arr.getJSONObject(i).getString("playcount");
                     fullText += curr+"\n";
                 }
-                str=fullText;
+                parsed=fullText;
             }
             catch(Exception e){
                 System.err.println("JSON parse error");
             }
         }
-        return str;
+        return parsed;
     }
 }

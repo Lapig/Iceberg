@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="xyz.lapig.iceberg">
+          package="xyz.lapig.iceberg">
+
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -15,8 +16,9 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
@@ -25,10 +27,22 @@
             android:theme="@style/AppTheme.NoActionBar">
             android:windowSoftInputMode="stateVisible"
             <intent-filter>
-                <action android:name="android.intent.action.SETTINGS" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.SETTINGS"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <receiver android:name=".IcebergWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="xyz.lapig.iceberg.TEXT_CHANGED"/>
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/iceberg_widget_info"/>
+        </receiver>
     </application>
 
 </manifest>

@@ -13,14 +13,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import java.util.HashMap;
-
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
 public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout homeView;
-    private HashMap<String, LastFMContainer> parsers;
+    //private HashMap<String, LastFMContainer> parsers;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,18 +26,20 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         homeView = (CoordinatorLayout) findViewById(R.id.home_view);
-        parsers=new HashMap<>();
+        //parsers=new HashMap<>();
 
         final LastFMContainer recent=new LastFMContainer(getString(R.string.recent),"lapigr",getString(R.string.api_key));
         final LastFMContainer albums=new LastFMContainer(getString(R.string.albums),"lapigr",getString(R.string.api_key));
+        final LastFMContainer artists=new LastFMContainer(getString(R.string.artists),"lapigr",getString(R.string.api_key));
 
-        parsers.put("recentTracks", recent);
+
+        //parsers.put("recentTracks", recent);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 snackAttack("Attempting");
-                ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                //((TextView)findViewById(R.id.textView)).setText(recent.toString());
             }}
         );
 
@@ -49,15 +49,17 @@ public class MainActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
-                        snackAttack("one");
                         ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                        Globals.setWidgetText(recent.toString());
+                        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
+                        intent.putExtra("NewString", recent.toString());
+                        getApplicationContext().sendBroadcast(intent);
                         break;
                     case 1:
-                        snackAttack("two");
                         ((TextView)findViewById(R.id.textView)).setText(albums.toString());
                         break;
                     case 2:
-                        snackAttack("three");
+                        ((TextView)findViewById(R.id.textView)).setText(artists.toString());
                         break;
                     default:
                         snackAttack("default");
@@ -71,15 +73,13 @@ public class MainActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
-                        snackAttack("one");
                         ((TextView)findViewById(R.id.textView)).setText(recent.toString());
                         break;
                     case 1:
-                        snackAttack("two");
                         ((TextView)findViewById(R.id.textView)).setText(albums.toString());
                         break;
                     case 2:
-                        snackAttack("three");
+                        ((TextView)findViewById(R.id.textView)).setText(artists.toString());
                         break;
                     default:
                         snackAttack("default");

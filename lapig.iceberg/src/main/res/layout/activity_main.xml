@@ -58,10 +58,11 @@
             android:text="@string/albumtab" />
 
         <android.support.design.widget.TabItem
+            android:id="@string/artisttab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:elevation="2dp"
-            android:text="Right" />
+            android:text="@string/artisttab"/>
     </android.support.design.widget.TabLayout>
 
     <include
@@ -76,7 +77,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/stat_sys_download" />
+        android:visibility="gone"
+        app:srcCompat="@android:drawable/stat_sys_download"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -95,8 +97,8 @@
             android:isScrollContainer="true"
             android:scrollHorizontally="false"
             android:scrollbars="vertical"
-            android:text="Click button pray 4 rest"
-            tools:text="Click button pray 4 rest" />
+            android:text="Click tab pray 4 rest"
+            tools:text="Click button pray 4 rest"/>
     </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>
