@@ -60,6 +60,31 @@ public class LastFMContainer {
     public String toRawString(){
         return rootJSON.toString();
     }
+
+    public void update(){
+        parsed="";
+        try {
+            RestClient.get(url, null, new JsonHttpResponseHandler(){
+                @Override
+                public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+                }
+                @Override
+                public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
+                }
+                @Override
+                public void onSuccess(int i, Header[] headers, JSONArray response) {
+                    rootJSONarr=response;
+                }
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+                    rootJSON=response;
+                }
+            });
+        }
+        catch(Exception e){
+            System.err.println(e.toString());
+        }
+    }
     public String toString(){
         if(parsed.equals("") || parsed.equals("obj")){
             String curr=""; String fullText = "";

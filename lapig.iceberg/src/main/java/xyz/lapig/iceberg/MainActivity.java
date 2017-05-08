@@ -18,7 +18,11 @@ import xyz.lapig.iceberg.handlers.LastFMContainer;
 public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout homeView;
-    //private HashMap<String, LastFMContainer> parsers;
+    private int activeTab;
+    private LastFMContainer recent;
+    private LastFMContainer albums;
+    private LastFMContainer artists;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,19 +30,17 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         homeView = (CoordinatorLayout) findViewById(R.id.home_view);
-        //parsers=new HashMap<>();
+        activeTab=0;
+        recent=new LastFMContainer(getString(R.string.recent),"lapigr",getString(R.string.api_key));
+        albums=new LastFMContainer(getString(R.string.albums),"lapigr",getString(R.string.api_key));
+        artists=new LastFMContainer(getString(R.string.artists),"lapigr",getString(R.string.api_key));
 
-        final LastFMContainer recent=new LastFMContainer(getString(R.string.recent),"lapigr",getString(R.string.api_key));
-        final LastFMContainer albums=new LastFMContainer(getString(R.string.albums),"lapigr",getString(R.string.api_key));
-        final LastFMContainer artists=new LastFMContainer(getString(R.string.artists),"lapigr",getString(R.string.api_key));
-
-
-        //parsers.put("recentTracks", recent);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
-                snackAttack("Attempting");
+                snackAttack("Clearing stored data");
+                recent.update();albums.update();artists.update();
                 //((TextView)findViewById(R.id.textView)).setText(recent.toString());
             }}
         );
@@ -54,12 +56,15 @@ public class MainActivity extends AppCompatActivity {
                         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
                         intent.putExtra("NewString", recent.toString());
                         getApplicationContext().sendBroadcast(intent);
+                        activeTab=0;
                         break;
                     case 1:
                         ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                        activeTab=1;
                         break;
                     case 2:
                         ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                        activeTab=2;
                         break;
                     default:
                         snackAttack("default");
@@ -74,12 +79,15 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                        activeTab=0;
                         break;
                     case 1:
                         ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                        activeTab=1;
                         break;
                     case 2:
                         ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                        activeTab=2;
                         break;
                     default:
                         snackAttack("default");
@@ -96,6 +104,26 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+        switch(activeTab){
+            case 0:
+                recent.update();
+                ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                break;
+            case 1:
+                albums.update();
+                ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                break;
+            case 2:
+                artists.update();
+                ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
