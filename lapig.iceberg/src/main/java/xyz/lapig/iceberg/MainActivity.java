@@ -8,10 +8,20 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.text.Html;
+import android.text.Spanned;
+
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
@@ -22,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private LastFMContainer recent;
     private LastFMContainer albums;
     private LastFMContainer artists;
+	private static final ExecutorService threadpool = Executors.newFixedThreadPool(3);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +52,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(final View view) {
                 snackAttack("Clearing stored data");
-                recent.update();albums.update();artists.update();
-                //((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                recent.updateBackground();albums.updateBackground();artists.updateBackground();
+                ((TextView)findViewById(R.id.textView)).setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
+					"<small>" + "description" + "</small>" + "<br />" + 
+					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>"));
             }}
         );
 
@@ -49,27 +63,37 @@ public class MainActivity extends AppCompatActivity {
         tab_holder.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+			  try{
                 switch(tab.getPosition()){
                     case 0:
-                        ((TextView)findViewById(R.id.textView)).setText(recent.toString());
-                        Globals.setWidgetText(recent.toString());
+                        Future<Spanned> fRecent = threadpool.submit(recent);
+						while (!fRecent.isDone()) {
+							Thread.sleep(500); 
+						}
+						Spanned responseRecent=fRecent.get();
+						((TextView)findViewById(R.id.textView)).setText(responseRecent);
+						
                         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-                        intent.putExtra("NewString", recent.toString());
+                        intent.putExtra("updatedWidgetText", Html.toHtml(recent.toFormattedString())); //haha epic
                         getApplicationContext().sendBroadcast(intent);
                         activeTab=0;
                         break;
                     case 1:
-                        ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                        ((TextView)findViewById(R.id.textView)).setText(albums.toFormattedString());
                         activeTab=1;
                         break;
                     case 2:
-                        ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                        ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
                         activeTab=2;
                         break;
                     default:
                         snackAttack("default");
                         break;
                 }
+			  }
+			  catch(Exception e){
+				  e.printStackTrace();
+			  }
             }
 
             @Override
@@ -78,15 +102,15 @@ public class MainActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
-                        ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                        ((TextView)findViewById(R.id.textView)).setText(recent.toFormattedString());
                         activeTab=0;
                         break;
                     case 1:
-                        ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                        ((TextView)findViewById(R.id.textView)).setText(albums.toFormattedString());
                         activeTab=1;
                         break;
                     case 2:
-                        ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                        ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
                         activeTab=2;
                         break;
                     default:
@@ -95,7 +119,27 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+		
+		//set text for recent tracks on first launch
+		//
+		//starting to worry that i really have no idea what im doing with this futures business
+		//	yep nvm i have no idea what im doing
+		/*try{
+			Future<Spanned> fRecent = threadpool.submit(recent);
+			while (!fRecent.isDone()) {
+				Thread.sleep(500); 
+			}
+			Spanned responseRecent=fRecent.get();
+			((TextView)findViewById(R.id.textView)).setText(responseRecent);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}*/
     }
+	public void updateComplete(String msg)
+	{
+		((TextView)findViewById(R.id.textView)).setText(msg);
+	}
     public void snackAttack(String msg){
          Snackbar.make(homeView, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
@@ -108,22 +152,50 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
-        switch(activeTab){
+	    try{
+	    snackAttack("Active tab: "+activeTab);} catch(Exception e){}
+		try{	
+		switch(activeTab){
             case 0:
-                recent.update();
-                ((TextView)findViewById(R.id.textView)).setText(recent.toString());
+                Future<Spanned> fRecent = threadpool.submit(recent);
+				snackAttack("Updating..");
+				while (!fRecent.isDone()) {
+					Thread.sleep(500); 
+				}
+				Spanned responseRecent=fRecent.get();
+                ((TextView)findViewById(R.id.textView)).setText(responseRecent);
+				
+				Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
+				intent.putExtra("updatedWidgetText", recent.toString());
+				getApplicationContext().sendBroadcast(intent);
                 break;
             case 1:
-                albums.update();
-                ((TextView)findViewById(R.id.textView)).setText(albums.toString());
+                Future<Spanned> fAlbums = threadpool.submit(albums);
+				snackAttack("Updating..");
+				while (!fAlbums.isDone()) {
+					Thread.sleep(500); 
+				}
+				Spanned responseAlbums=fAlbums.get();
+                ((TextView)findViewById(R.id.textView)).setText(responseAlbums);
                 break;
             case 2:
-                artists.update();
-                ((TextView)findViewById(R.id.textView)).setText(artists.toString());
+                Future<Spanned> fArtists = threadpool.submit(artists);
+				snackAttack("Updating..");
+				while (!fArtists.isDone()) {
+					Thread.sleep(500); 
+				}
+				Spanned responseArtists=fArtists.get();
+                ((TextView)findViewById(R.id.textView)).setText(responseArtists);
                 break;
             default:
-                break;
+			    ((TextView)findViewById(R.id.textView)).setText(recent.toString());  
+                activeTab=0;
+				break;
         }
+		}
+		catch(Exception e){
+			((TextView)findViewById(R.id.textView)).setText("Interruption error");
+		}
     }
 
     @Override

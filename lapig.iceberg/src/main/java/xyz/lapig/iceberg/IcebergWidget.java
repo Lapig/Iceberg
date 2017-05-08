@@ -6,7 +6,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
-
+import android.text.Html;
+import android.text.Spanned;
 /**
  * Implementation of App Widget functionality.
  */
@@ -41,9 +42,9 @@ public class IcebergWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.iceberg_widget);
         if (intent.getAction().equals(ACTION_TEXT_CHANGED)) {
             // handle intent here
-            String s = intent.getStringExtra("NewString");
-            //RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.iceberg_widget);
-            views.setTextViewText(R.id.appwidget_text, s);
+            String s = intent.getStringExtra("updatedWidgetText");
+			Spanned formattedStr = Html.fromHtml(s, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+            views.setTextViewText(R.id.appwidget_text, formattedStr);
         }
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         appWidgetManager.updateAppWidget(new ComponentName(context,IcebergWidget.class.getName()), views);

@@ -4,16 +4,22 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import android.text.Html;
+import android.text.Spanned;
+
+
+import java.util.concurrent.Callable;
 
 import cz.msebera.android.httpclient.Header;
 import xyz.lapig.iceberg.RestClient;
 
-public class LastFMContainer {
+public class LastFMContainer implements Callable {
     private JSONObject rootJSON;
     private JSONArray rootJSONarr;
     private String parsed;
     private String url;
     private String fetch_type, sub_key;
+	private Spanned formattedOut;
 	public LastFMContainer(JSONObject base, String uri){
         rootJSON=base;
         parsed="";
@@ -60,17 +66,48 @@ public class LastFMContainer {
     public String toRawString(){
         return rootJSON.toString();
     }
-
-    public void update(){
-        parsed="";
+	
+	@Override
+	public Spanned call() {
+		parsed="Update in progress";
         try {
             RestClient.get(url, null, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                }
+	            	parsed="error";    
+				}
                 @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
+                	parsed="error";
+				}
+                @Override
+                public void onSuccess(int i, Header[] headers, JSONArray response) {
+                    rootJSONarr=response;
                 }
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+                    rootJSON=response;
+                }
+            });
+        }
+        catch(Exception e){
+            System.err.println(e.toString());
+        }
+		return toFormattedString();
+	}
+
+	public void updateBackground(){
+        parsed="Update in progress";
+        try {
+            RestClient.get(url, null, new JsonHttpResponseHandler(){
+                @Override
+                public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+	            	parsed="error";    
+				}
+                @Override
+                public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
+                	parsed="error";
+				}
                 @Override
                 public void onSuccess(int i, Header[] headers, JSONArray response) {
                     rootJSONarr=response;
@@ -85,8 +122,42 @@ public class LastFMContainer {
             System.err.println(e.toString());
         }
     }
+	
+	public Spanned toFormattedString(){
+		String curr=""; String fullText = "";
+	    try {
+		   JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
+		   for (int i = 0; i < arr.length(); i++) {
+			   curr = "<b>"+arr.getJSONObject(i).getString("name")+"</b>";
+			   curr += "<br /><small>" + arr.getJSONObject(i).getJSONObject("artist").getString("#text")+"</small>";
+
+			   fullText += (i+1) + ".  " + curr + "<br>";
+		   }
+		   formattedOut=Html.fromHtml(fullText, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+	    }
+	    catch(Exception e){
+		   return toFormattedAlbumString();
+	    }
+        return formattedOut;
+	}
+	public Spanned toFormattedAlbumString(){
+		String curr=""; String fullText = "";
+		try {
+			JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
+			for (int i = 0; i < arr.length(); i++) {
+				curr = "<b>" + arr.getJSONObject(i).getString("name")+"</b> - <small>"+arr.getJSONObject(i).getString("playcount")+"</small>";
+				fullText += curr+"<br>";
+			}
+			formattedOut=Html.fromHtml(fullText, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+		}
+		catch(Exception e){
+			System.err.println("JSON parse error");
+		}
+        return formattedOut;
+    }
+	
     public String toString(){
-        if(parsed.equals("") || parsed.equals("obj")){
+        if(parsed.length()>10){
             String curr=""; String fullText = "";
            try {
                JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -104,7 +175,7 @@ public class LastFMContainer {
         return parsed;
     }
     public String toAlbumsString(){
-        if(parsed.equals("") || parsed.equals("obj")){
+        if(parsed.length()>10){
             String curr=""; String fullText = "";
             try {
                 JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
