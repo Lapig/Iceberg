@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView)findViewById(R.id.textView)).setText(responseRecent);
 				
 				Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-				intent.putExtra("updatedWidgetText", recent.toString());
+				intent.putExtra("updatedWidgetText", Html.toHtml(recent.toFormattedString())); 
 				getApplicationContext().sendBroadcast(intent);
                 break;
             case 1:
