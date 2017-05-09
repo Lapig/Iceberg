@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
+import xyz.lapig.iceberg.BackgroundTasks;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         homeView = (CoordinatorLayout) findViewById(R.id.home_view);
-        activeTab=0;
+        activeTab=-1;
         recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
         albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
         artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
 						
                         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
                         intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
-                        getApplicationContext().sendBroadcast(intent);
+                        //getApplicationContext().sendBroadcast(intent);
+                        new Thread(new BackgroundTasks(getApplicationContext(), intent)).start();
                         activeTab=0;
                         break;
                     case 1:
@@ -84,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
                     case 2:
                         ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
                         activeTab=2;
+                        break;
+                    case -1:
+                        ((TextView)findViewById(R.id.textView)).setText(recent.toFormattedString());
                         break;
                     default:
                         snackAttack("default");
