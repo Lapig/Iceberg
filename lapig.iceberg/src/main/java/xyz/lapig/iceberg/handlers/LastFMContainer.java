@@ -1,12 +1,12 @@
 package xyz.lapig.iceberg.handlers;
 
+import android.text.Html;
+import android.text.Spanned;
+
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import android.text.Html;
-import android.text.Spanned;
-
 
 import java.util.concurrent.Callable;
 
@@ -71,7 +71,7 @@ public class LastFMContainer implements Callable {
 	public Spanned call() {
 		parsed="Update in progress";
         try {
-            RestClient.get(url, null, new JsonHttpResponseHandler(){
+            RestClient.getSync(url, null, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
 	            	parsed="error";    

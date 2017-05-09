@@ -37,8 +37,9 @@ captures/
 .idea/
 .idea/workspace.xml
 
-*.json
-
 # Keystore files
 *.jks
 lapig.iceberg/src/main/res/values/tokens.xml
+#misc
+*.json
+gradle-app.setting
