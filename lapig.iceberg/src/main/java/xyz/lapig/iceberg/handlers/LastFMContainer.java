@@ -41,49 +41,22 @@ public class LastFMContainer implements Callable {
         else{
             return;
         }
-        try {
-            RestClient.get(url, null, new JsonHttpResponseHandler(){
-                @Override
-                public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                }
-                @Override
-                public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
-                }
-                @Override
-                public void onSuccess(int i, Header[] headers, JSONArray response) {
-                    rootJSONarr=response;
-                }
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-                    rootJSON=response;
-                }
-            });
-        }
-        catch(Exception e){
-            System.err.println(e.toString());
-        }
+        formattedOut=Html.fromHtml("");
+        updateBackground();
     }
-    public String toRawString(){
-        return rootJSON.toString();
-    }
+    
 	
 	@Override
 	public Spanned call() {
+		if(formattedOut.length()>0)
+            return formattedOut;
 		parsed="Update in progress";
         try {
             RestClient.getSync(url, null, new JsonHttpResponseHandler(){
                 @Override
-                public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-	            	parsed="error";    
-				}
-                @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
                 	parsed="error";
 				}
-                @Override
-                public void onSuccess(int i, Header[] headers, JSONArray response) {
-                    rootJSONarr=response;
-                }
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response){
                     rootJSON=response;
@@ -101,17 +74,9 @@ public class LastFMContainer implements Callable {
         try {
             RestClient.get(url, null, new JsonHttpResponseHandler(){
                 @Override
-                public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-	            	parsed="error";    
-				}
-                @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
                 	parsed="error";
 				}
-                @Override
-                public void onSuccess(int i, Header[] headers, JSONArray response) {
-                    rootJSONarr=response;
-                }
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response){
                     rootJSON=response;
@@ -124,6 +89,8 @@ public class LastFMContainer implements Callable {
     }
 	
 	public Spanned toFormattedString(){
+        if(formattedOut.length()>0)
+            return formattedOut;
 		String curr=""; String fullText = "";
 	    try {
 		   JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -156,8 +123,11 @@ public class LastFMContainer implements Callable {
         return formattedOut;
     }
 	
+    public boolean isEmpty(){
+            return formattedOut.length()==0;
+    }
     public String toString(){
-        if(parsed.length()>10){
+        if(parsed.length()>5){
             String curr=""; String fullText = "";
            try {
                JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -175,7 +145,7 @@ public class LastFMContainer implements Callable {
         return parsed;
     }
     public String toAlbumsString(){
-        if(parsed.length()>10){
+        if(parsed.length()>5){
             String curr=""; String fullText = "";
             try {
                 JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -190,5 +160,9 @@ public class LastFMContainer implements Callable {
             }
         }
         return parsed;
+    }
+
+    public String toRawString(){
+        return rootJSON.toString();
     }
 }

@@ -18,9 +18,9 @@ public class SettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         Intent intent = getIntent();
-        String extra = intent.getStringExtra("text");
+        String user = intent.getStringExtra("user");
         final EditText editText = (EditText) findViewById(R.id.settingsText);
-
+        editText.setText(user);
         final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(editText.getWindowToken(), 0);
         mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);

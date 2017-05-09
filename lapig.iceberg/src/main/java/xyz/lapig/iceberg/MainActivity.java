@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private LastFMContainer recent;
     private LastFMContainer albums;
     private LastFMContainer artists;
+    private String user="lapigr";
+
 	private ExecutorService updateExecuter;
 
 
@@ -39,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         homeView = (CoordinatorLayout) findViewById(R.id.home_view);
         activeTab=0;
-        recent=new LastFMContainer(getString(R.string.recent),"lapigr",getString(R.string.api_key));
-        albums=new LastFMContainer(getString(R.string.albums),"lapigr",getString(R.string.api_key));
-        artists=new LastFMContainer(getString(R.string.artists),"lapigr",getString(R.string.api_key));
+        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
+        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
+        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
 
         updateExecuter = Executors.newCachedThreadPool();
 
@@ -50,7 +52,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(final View view) {
                 snackAttack("Clearing stored data");
-                recent.updateBackground();albums.updateBackground();artists.updateBackground();
+                recent.updateBackground();
+                albums.updateBackground();
+                artists.updateBackground();
                 ((TextView)findViewById(R.id.textView)).setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
 					"<small>" + "description" + "</small>" + "<br />" + 
 					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>"));
@@ -69,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 						((TextView)findViewById(R.id.textView)).setText(responseRecent);
 						
                         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-                        intent.putExtra("updatedWidgetText", Html.toHtml(recent.toFormattedString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
+                        intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
                         getApplicationContext().sendBroadcast(intent);
                         activeTab=0;
                         break;
@@ -101,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
                         Future<Spanned> fRecent = updateExecuter.submit(recent);
                         Spanned responseRecent=fRecent.get();
                         ((TextView)findViewById(R.id.textView)).setText(responseRecent);
+
+                        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
+                        intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS));
+                        getApplicationContext().sendBroadcast(intent);
                         activeTab=0;
                         break;
                     case 1:
@@ -116,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                         activeTab=2;
                         break;
                     default:
-                        snackAttack("default");
+                        snackAttack("Invalid tab");
                         break;
                 }
                 }
@@ -146,26 +154,31 @@ public class MainActivity extends AppCompatActivity {
 		try{
 		switch(activeTab){
             case 0:
-                Future<Spanned> fRecent = updateExecuter.submit(recent);
+                /*Future<Spanned> fRecent = updateExecuter.submit(recent);
 				Spanned responseRecent=fRecent.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseRecent);
-				
+                ((TextView)findViewById(R.id.textView)).setText(responseRecent);*/
+				Spanned s=recent.toFormattedString();
+                ((TextView)findViewById(R.id.textView)).setText(s);
 				Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-				intent.putExtra("updatedWidgetText", Html.toHtml(recent.toFormattedString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS));
+				intent.putExtra("updatedWidgetText", Html.toHtml(s, Html.FROM_HTML_OPTION_USE_CSS_COLORS));
 				getApplicationContext().sendBroadcast(intent);
                 break;
             case 1:
-                Future<Spanned> fAlbums = updateExecuter.submit(albums);
+                /*Future<Spanned> fAlbums = updateExecuter.submit(albums);
 				Spanned responseAlbums=fAlbums.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseAlbums);
+                ((TextView)findViewById(R.id.textView)).setText(responseAlbums);*/
+
+                ((TextView)findViewById(R.id.textView)).setText(albums.toFormattedString());
                 break;
             case 2:
-                Future<Spanned> fArtists = updateExecuter.submit(artists);
+                /*Future<Spanned> fArtists = updateExecuter.submit(artists);
 				Spanned responseArtists=fArtists.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseArtists);
+                ((TextView)findViewById(R.id.textView)).setText(responseArtists);*/
+
+                ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
                 break;
             default:
-			    ((TextView)findViewById(R.id.textView)).setText(recent.toString());  
+			    snackAttack("activeTab set to invalid value, send help");
                 activeTab=0;
 				break;
         }
@@ -186,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
 
             Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-            intent.putExtra("text", "@app_name");
+            intent.putExtra("user", user);
             startActivity(intent);
         }
 

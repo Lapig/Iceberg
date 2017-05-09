@@ -9,20 +9,15 @@ import android.widget.RemoteViews;
 import android.text.Html;
 import android.text.Spanned;
 /**
- * Implementation of App Widget functionality.
+ * Widget
  */
 public class IcebergWidget extends AppWidgetProvider {
     public static final String ACTION_TEXT_CHANGED = "xyz.lapig.iceberg.TEXT_CHANGED";
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-                                int appWidgetId) {
-
-        //CharSequence widgetText = Globals.getWidgetText();
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) 
+    {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.iceberg_widget);
-
-        //views.setTextViewText(R.id.appwidget_text, widgetText);
-        //TextView outputText = views.
 
         // Instruct the widget manager to update the widget
 
