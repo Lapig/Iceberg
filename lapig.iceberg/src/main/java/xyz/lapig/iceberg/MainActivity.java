@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
-import xyz.lapig.iceberg.BackgroundTasks;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(final View view) {
                 snackAttack("Clearing stored data");
-                recent.updateBackground();
+                recent.clear();
+                //recent.updateBackground();
                 albums.updateBackground();
                 artists.updateBackground();
                 ((TextView)findViewById(R.id.textView)).setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
@@ -69,10 +69,15 @@ public class MainActivity extends AppCompatActivity {
 			  try{
                 switch(tab.getPosition()){
                     case 0:
+          long startTime = System.nanoTime();
+
                         Future<Spanned> fRecent = updateExecuter.submit(recent);
 						Spanned responseRecent=fRecent.get();
 						((TextView)findViewById(R.id.textView)).setText(responseRecent);
-						
+			long endTime = System.nanoTime();
+           long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+           snackAttack(String.valueOf(duration));
+
                         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
                         intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
                         //getApplicationContext().sendBroadcast(intent);
@@ -144,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 		((TextView)findViewById(R.id.textView)).setText(msg);
 	}
     public void snackAttack(String msg){
-         Snackbar.make(homeView, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+         Snackbar.make(homeView, msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -27,19 +27,23 @@ public class LastFMContainer implements Callable {
         fetch_type="recenttracks";  sub_key="track";
     }
     public LastFMContainer(String type, String user, String key){
-        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json";
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
         parsed="";
-        if(type.equals("user.gettopalbums")){
-            fetch_type="topalbums"; sub_key="album";
-        }
-        else if(type.equals("user.getrecenttracks")){
-            fetch_type="recenttracks";  sub_key="track";
-        }
-        else if(type.equals("user.gettopartists")){
-            fetch_type="topartists"; sub_key="artist";
-        }
-        else{
-            return;
+        switch (type) {
+            case "user.gettopalbums":
+                fetch_type = "topalbums";
+                sub_key = "album";
+                break;
+            case "user.getrecenttracks":
+                fetch_type = "recenttracks";
+                sub_key = "track";
+                break;
+            case "user.gettopartists":
+                fetch_type = "topartists";
+                sub_key = "artist";
+                break;
+            default:
+                return;
         }
         formattedOut=Html.fromHtml("");
         updateBackground();
@@ -52,7 +56,7 @@ public class LastFMContainer implements Callable {
             return formattedOut;
 		parsed="Update in progress";
         try {
-            RestClient.getSync(url, null, new JsonHttpResponseHandler(){
+            RestClient.getSync(url, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
                 	parsed="error";
@@ -72,7 +76,7 @@ public class LastFMContainer implements Callable {
 	public void updateBackground(){
         parsed="Update in progress";
         try {
-            RestClient.get(url, null, new JsonHttpResponseHandler(){
+            RestClient.get(url, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
                 	parsed="error";
@@ -91,16 +95,16 @@ public class LastFMContainer implements Callable {
 	public Spanned toFormattedString(){
         if(formattedOut.length()>0)
             return formattedOut;
-		String curr=""; String fullText = "";
+		String curr=""; StringBuilder fullText = new StringBuilder();
 	    try {
 		   JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
 		   for (int i = 0; i < arr.length(); i++) {
 			   curr = "<b>"+arr.getJSONObject(i).getString("name")+"</b>";
 			   curr += "<br /><small>" + arr.getJSONObject(i).getJSONObject("artist").getString("#text")+"</small>";
 
-			   fullText += (i+1) + ".  " + curr + "<br>";
+			   fullText.append(i + 1).append(".  ").append(curr).append("<br>");
 		   }
-		   formattedOut=Html.fromHtml(fullText, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+		   formattedOut=Html.fromHtml(fullText.toString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS);
 	    }
 	    catch(Exception e){
 		   return toFormattedAlbumString();
@@ -108,14 +112,14 @@ public class LastFMContainer implements Callable {
         return formattedOut;
 	}
 	public Spanned toFormattedAlbumString(){
-		String curr=""; String fullText = "";
+		String curr=""; StringBuilder fullText = new StringBuilder();
 		try {
 			JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
 			for (int i = 0; i < arr.length(); i++) {
 				curr = "<b>" + arr.getJSONObject(i).getString("name")+"</b> - <small>"+arr.getJSONObject(i).getString("playcount")+"</small>";
-				fullText += curr+"<br>";
+				fullText.append(curr).append("<br>");
 			}
-			formattedOut=Html.fromHtml(fullText, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+			formattedOut=Html.fromHtml(fullText.toString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS);
 		}
 		catch(Exception e){
 			System.err.println("JSON parse error");
@@ -126,17 +130,21 @@ public class LastFMContainer implements Callable {
     public boolean isEmpty(){
             return formattedOut.length()==0;
     }
+    public void clear(){
+        parsed="";
+        formattedOut=Html.fromHtml("");
+    }
     public String toString(){
         if(parsed.length()>5){
-            String curr=""; String fullText = "";
+            String curr=""; StringBuilder fullText = new StringBuilder();
            try {
                JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
                for (int i = 0; i < arr.length(); i++) {
                    curr = arr.getJSONObject(i).getJSONObject("artist").getString("#text");
                    curr += "\n" + arr.getJSONObject(i).getString("name");
-                   fullText += (i+1) + "." + curr + "\n";
+                   fullText.append(i + 1).append(".").append(curr).append("\n");
                }
-               parsed=fullText;
+               parsed= fullText.toString();
            }
            catch(Exception e){
                return toAlbumsString();
@@ -146,14 +154,14 @@ public class LastFMContainer implements Callable {
     }
     public String toAlbumsString(){
         if(parsed.length()>5){
-            String curr=""; String fullText = "";
+            String curr=""; StringBuilder fullText = new StringBuilder();
             try {
                 JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
                 for (int i = 0; i < arr.length(); i++) {
                     curr = arr.getJSONObject(i).getString("name")+"  "+arr.getJSONObject(i).getString("playcount");
-                    fullText += curr+"\n";
+                    fullText.append(curr).append("\n");
                 }
-                parsed=fullText;
+                parsed= fullText.toString();
             }
             catch(Exception e){
                 System.err.println("JSON parse error");
