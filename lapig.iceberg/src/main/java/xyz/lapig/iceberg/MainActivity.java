@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.os.Handler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,12 +24,13 @@ import xyz.lapig.iceberg.handlers.LastFMContainer;
 
 public class MainActivity extends AppCompatActivity {
 
-    private CoordinatorLayout homeView;
+    private CoordinatorLayout homeLayout;
     private int activeTab;
     private LastFMContainer recent;
     private LastFMContainer albums;
     private LastFMContainer artists;
     private String user="lapigr";
+    private TextView homeView;
 
 	private ExecutorService updateExecuter;
 
@@ -39,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        homeView = (CoordinatorLayout) findViewById(R.id.home_view);
+        homeLayout = (CoordinatorLayout) findViewById(R.id.home_view);
+        homeView = (TextView)findViewById(R.id.textView);
         activeTab=-1;
         recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
         albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 //recent.updateBackground();
                 albums.updateBackground();
                 artists.updateBackground();
-                ((TextView)findViewById(R.id.textView)).setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
+                homeView.setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
 					"<small>" + "description" + "</small>" + "<br />" + 
 					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>"));
             }}
@@ -69,31 +72,21 @@ public class MainActivity extends AppCompatActivity {
 			  try{
                 switch(tab.getPosition()){
                     case 0:
-          long startTime = System.nanoTime();
-
-                        Future<Spanned> fRecent = updateExecuter.submit(recent);
-						Spanned responseRecent=fRecent.get();
-						((TextView)findViewById(R.id.textView)).setText(responseRecent);
-			long endTime = System.nanoTime();
-           long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-           snackAttack(String.valueOf(duration));
-
-                        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-                        intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
-                        //getApplicationContext().sendBroadcast(intent);
-                        new Thread(new BackgroundTasks(getApplicationContext(), intent)).start();
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(recent);
+                        widgetUpdateAsync(recent);
                         activeTab=0;
                         break;
                     case 1:
-                        ((TextView)findViewById(R.id.textView)).setText(albums.toFormattedString());
+                        homeView.setText(albums.toFormattedString());
                         activeTab=1;
                         break;
                     case 2:
-                        ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
+                        homeView.setText(artists.toFormattedString());
                         activeTab=2;
                         break;
                     case -1:
-                        ((TextView)findViewById(R.id.textView)).setText(recent.toFormattedString());
+                        homeView.setText(recent.toFormattedString());
                         break;
                     default:
                         snackAttack("default");
@@ -114,23 +107,21 @@ public class MainActivity extends AppCompatActivity {
                     case 0:
                         Future<Spanned> fRecent = updateExecuter.submit(recent);
                         Spanned responseRecent=fRecent.get();
-                        ((TextView)findViewById(R.id.textView)).setText(responseRecent);
+                        homeView.setText(responseRecent);
 
-                        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-                        intent.putExtra("updatedWidgetText", Html.toHtml(responseRecent, Html.FROM_HTML_OPTION_USE_CSS_COLORS));
-                        getApplicationContext().sendBroadcast(intent);
+                        widgetUpdateAsync(recent);
                         activeTab=0;
                         break;
                     case 1:
                         Future<Spanned> fAlbums = updateExecuter.submit(albums);
                         Spanned responseAlbums=fAlbums.get();
-                        ((TextView)findViewById(R.id.textView)).setText(responseAlbums);
+                        homeView.setText(responseAlbums);
                         activeTab=1;
                         break;
                     case 2:
                         Future<Spanned> fArtists = updateExecuter.submit(artists);
                         Spanned responseArtists=fArtists.get();
-                        ((TextView)findViewById(R.id.textView)).setText(responseArtists);
+                        homeView.setText(responseArtists);
                         activeTab=2;
                         break;
                     default:
@@ -143,13 +134,43 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        try{
+            Future<Spanned> fRecent = updateExecuter.submit(recent);
+            Spanned responseRecent=fRecent.get();
+            homeView.setText(responseRecent);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
-	public void updateComplete(String msg)
+
+    public boolean widgetUpdateAsync(LastFMContainer target){
+        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
+        intent.putExtra("updatedWidgetText", Html.toHtml(target.toFormattedString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
+        new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
+        return true;
+    }
+	public boolean viewUpdateAsync(LastFMContainer target)
 	{
-		((TextView)findViewById(R.id.textView)).setText(msg);
+		Handler handler = new Handler();
+        final Future<Spanned> fRecent = updateExecuter.submit(target);
+        
+        handler.post(new Runnable(){
+            public void run(){
+                try{
+                Spanned responseRecent = fRecent.get();
+                homeView.setText(responseRecent);
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+        return true;
 	}
     public void snackAttack(String msg){
-         Snackbar.make(homeView, msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
+         Snackbar.make(homeLayout, msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -164,38 +185,26 @@ public class MainActivity extends AppCompatActivity {
 		try{
 		switch(activeTab){
             case 0:
-                /*Future<Spanned> fRecent = updateExecuter.submit(recent);
-				Spanned responseRecent=fRecent.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseRecent);*/
 				Spanned s=recent.toFormattedString();
-                ((TextView)findViewById(R.id.textView)).setText(s);
-				Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-				intent.putExtra("updatedWidgetText", Html.toHtml(s, Html.FROM_HTML_OPTION_USE_CSS_COLORS));
-				getApplicationContext().sendBroadcast(intent);
+                homeView.setText(s);
+				widgetUpdateAsync(recent);
                 break;
             case 1:
-                /*Future<Spanned> fAlbums = updateExecuter.submit(albums);
-				Spanned responseAlbums=fAlbums.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseAlbums);*/
 
-                ((TextView)findViewById(R.id.textView)).setText(albums.toFormattedString());
+                homeView.setText(albums.toFormattedString());
                 break;
             case 2:
-                /*Future<Spanned> fArtists = updateExecuter.submit(artists);
-				Spanned responseArtists=fArtists.get();
-                ((TextView)findViewById(R.id.textView)).setText(responseArtists);*/
-
-                ((TextView)findViewById(R.id.textView)).setText(artists.toFormattedString());
+                homeView.setText(artists.toFormattedString());
                 break;
             default:
-			    snackAttack("activeTab set to invalid value, send help");
+			    viewUpdateAsync(recent);
                 activeTab=0;
 				break;
         }
 		}
 		catch(Exception e){
 	        e.printStackTrace();
-			((TextView)findViewById(R.id.textView)).setText("Interruption error");
+			snackAttack("Interruption error");
 		}
     }
 

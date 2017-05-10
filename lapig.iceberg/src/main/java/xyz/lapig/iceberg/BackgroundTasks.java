@@ -7,13 +7,20 @@ import android.content.Context;
 public class BackgroundTasks implements Runnable {
 	private Context context;
 	private Intent intent;
-	public BackgroundTasks(Context c, Intent i){
+	private int task;
+	public BackgroundTasks(int task, Context c, Intent i){
+		this.task=task;
 		context=c;
 		intent=i;
 	}
 
 	public void run(){
-		context.sendBroadcast(intent);
+		switch(task){
+			case 0:
+				context.sendBroadcast(intent);
+				break;
+		}
+		return;
 	}
 
 }

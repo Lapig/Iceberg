@@ -10,6 +10,10 @@ class Globals {
         return widgetText;
     }
     public static void setWidgetText(String s){
+   /*     long startTime = System.nanoTime();
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+        */
         widgetText=s;
     }
 }
