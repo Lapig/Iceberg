@@ -3,8 +3,11 @@ package xyz.lapig.iceberg;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.support.design.widget.Snackbar;
+
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
@@ -33,21 +36,29 @@ public class SettingsActivity extends Activity {
                 mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
         });
-        editText = (EditText)findViewById(R.id.@string/t);
-        /*txtEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void TexttView.onFocusChange(View v, boolean hasFocus) {
+            public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    // code to execute when EditText loses focus
+                    // EditText lost focus
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString(getString(R.string.user), editText.getText().toString());
+                    editor.commit();
+                    snackAttack("committed change");
+                }
+                else{
+                    snackAttack("else block");
                 }
             }
-        });*/
+        });
     }
     public void onWindowFocusChanged(boolean hasFocus) {
-
         super.onWindowFocusChanged(hasFocus);
 
-        if(hasFocus)
+        if(hasFocus){
+
+        }
 
     }
     public void showSoftKeyboard(View view) {
@@ -56,5 +67,8 @@ public class SettingsActivity extends Activity {
                     getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         }
+    }
+    public void snackAttack(String msg){
+        Snackbar.make(findViewById(R.id.settingsView), msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
 }
