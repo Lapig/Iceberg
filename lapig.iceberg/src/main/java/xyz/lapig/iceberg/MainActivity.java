@@ -1,7 +1,10 @@
 package xyz.lapig.iceberg;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.os.Handler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
         albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
         artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
 
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        user = sharedPref.getString(getString(R.string.user), "lapigr");
+
         updateExecuter = Executors.newCachedThreadPool();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 artists.updateBackground();
                 homeView.setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
 					"<small>" + "description" + "</small>" + "<br />" + 
-					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>"));
+					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>", Html.FROM_HTML_OPTION_USE_CSS_COLORS));
             }}
         );
 
@@ -99,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
                 try{
@@ -168,15 +175,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return true;
-	}
+    }
     public void snackAttack(String msg){
-         Snackbar.make(homeLayout, msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
+        Snackbar.make(homeLayout, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+        updateExecuter.shutdown();
     }
     @Override
     public void onResume() {
@@ -214,20 +226,22 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         if (id == R.id.action_settings) {
-
             Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
             intent.putExtra("user", user);
             startActivity(intent);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();  // Always call the superclass method first
+    public void onDestroy() {
+        super.onDestroy();
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.user), user);
+        editor.commit();
         updateExecuter.shutdown();
+        updateExecuter=null;
     }
 }

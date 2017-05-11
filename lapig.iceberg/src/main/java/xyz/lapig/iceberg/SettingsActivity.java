@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+
 /**
  * Created by Lapig on 4/23/2017.
  */
@@ -32,13 +33,23 @@ public class SettingsActivity extends Activity {
                 mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
         });
+        editText = (EditText)findViewById(R.id.@string/t);
+        /*txtEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void TexttView.onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    // code to execute when EditText loses focus
+                }
+            }
+        });*/
+    }
+    public void onWindowFocusChanged(boolean hasFocus) {
 
+        super.onWindowFocusChanged(hasFocus);
 
-        //TextView view = (TextView) findViewById(R.id.textView1);
-        //view.setText(extra);
+        if(hasFocus)
 
     }
-
     public void showSoftKeyboard(View view) {
         if (view.requestFocus()) {
             InputMethodManager imm = (InputMethodManager)

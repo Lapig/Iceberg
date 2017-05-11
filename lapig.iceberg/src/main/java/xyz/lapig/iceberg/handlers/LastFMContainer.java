@@ -15,7 +15,6 @@ import xyz.lapig.iceberg.RestClient;
 
 public class LastFMContainer implements Callable {
     private JSONObject rootJSON;
-    private JSONArray rootJSONarr;
     private String parsed;
     private String url;
     private String fetch_type, sub_key;

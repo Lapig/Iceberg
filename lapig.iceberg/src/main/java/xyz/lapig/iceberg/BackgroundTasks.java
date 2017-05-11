@@ -18,9 +18,10 @@ public class BackgroundTasks implements Runnable {
 		switch(task){
 			case 0:
 				context.sendBroadcast(intent);
-				break;
+				return;
+			default:
+				return;
 		}
-		return;
 	}
 
 }
