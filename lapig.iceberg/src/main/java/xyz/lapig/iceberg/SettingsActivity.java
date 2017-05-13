@@ -16,35 +16,36 @@ import android.widget.EditText;
  */
 
 public class SettingsActivity extends Activity {
-
+    EditText userTextField;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         Intent intent = getIntent();
         String user = intent.getStringExtra("user");
-        final EditText editText = (EditText) findViewById(R.id.settingsText);
-        editText.setText(user);
+        userTextField = (EditText) findViewById(R.id.settingsText);
+        userTextField.setText(user);
         final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-        mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+        mgr.hideSoftInputFromWindow(userTextField.getWindowToken(), 0);
+        mgr.showSoftInput(userTextField, InputMethodManager.SHOW_IMPLICIT);
 
 
-        editText.setOnClickListener(new View.OnClickListener() {
+        userTextField.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                mgr.showSoftInput(userTextField, InputMethodManager.SHOW_IMPLICIT);
             }
         });
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        userTextField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     // EditText lost focus
                     SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putString(getString(R.string.user), editText.getText().toString());
+                    editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
                     editor.commit();
+                    Globals.setUser(userTextField.getText().toString().toLowerCase());
                     snackAttack("committed change");
                 }
                 else{
@@ -53,13 +54,19 @@ public class SettingsActivity extends Activity {
             }
         });
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        //SharedPreferences sharedPref = getParent().getPreferences(Context.MODE_PRIVATE);
+        //userTextField.setText(sharedPref.getString(getString(R.string.user), "lapigr"));
+        userTextField.setText(Globals.getUser());
+    }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
         if(hasFocus){
 
         }
-
     }
     public void showSoftKeyboard(View view) {
         if (view.requestFocus()) {

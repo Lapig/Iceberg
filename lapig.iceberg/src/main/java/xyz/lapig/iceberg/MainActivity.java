@@ -31,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private LastFMContainer recent;
     private LastFMContainer albums;
     private LastFMContainer artists;
-    private String user="lapigr";
+    private LastFMContainer lastFMLookups[] = new LastFMContainer[3];
+    private String user="";
     private TextView homeView;
 
 	private ExecutorService updateExecuter;
@@ -46,12 +47,17 @@ public class MainActivity extends AppCompatActivity {
         homeLayout = (CoordinatorLayout) findViewById(R.id.home_view);
         homeView = (TextView)findViewById(R.id.textView);
         activeTab=-1;
-        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
-        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
-        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
 
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         user = sharedPref.getString(getString(R.string.user), "lapigr");
+        Globals.setUser(user);
+
+        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
+        lastFMLookups[0]=recent;
+        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
+        lastFMLookups[1]=albums;
+        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
+        lastFMLookups[2]=artists;
 
         updateExecuter = Executors.newCachedThreadPool();
 
@@ -78,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(recent);
-                        widgetUpdateAsync(recent);
+                        viewUpdateAsync(recent, true);
                         activeTab=0;
                         break;
                     case 1:
@@ -157,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
         return true;
     }
-	public boolean viewUpdateAsync(LastFMContainer target)
+	public boolean viewUpdateAsync(LastFMContainer target, boolean widgetUpdate)
 	{
 		Handler handler = new Handler();
         final Future<Spanned> fRecent = updateExecuter.submit(target);
@@ -174,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        if(widgetUpdate)
+            widgetUpdateAsync(target);
         return true;
     }
     public void snackAttack(String msg){
@@ -193,12 +200,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        snackAttack(Globals.getUser());
+        if(!user.equals(Globals.getUser())){
+            user=Globals.getUser();
+            updateContainers(user);
+            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(getString(R.string.user), user);
+            editor.commit();
+        }
         updateExecuter = Executors.newCachedThreadPool();
 		try{
 		switch(activeTab){
             case 0:
-				Spanned s=recent.toFormattedString();
-                homeView.setText(s);
+                Future<Spanned> fRecent = updateExecuter.submit(recent);
+                Spanned responseRecent=fRecent.get();
+                homeView.setText(responseRecent);
 				widgetUpdateAsync(recent);
                 break;
             case 1:
@@ -209,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 homeView.setText(artists.toFormattedString());
                 break;
             default:
-			    viewUpdateAsync(recent);
+			    viewUpdateAsync(recent, false);
                 activeTab=0;
 				break;
         }
@@ -218,6 +235,11 @@ public class MainActivity extends AppCompatActivity {
 	        e.printStackTrace();
 			snackAttack("Interruption error");
 		}
+    }
+    private void updateContainers(String s){
+        for(LastFMContainer l : lastFMLookups){
+            l.setUser(s);
+        }
     }
 
     @Override

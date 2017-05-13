@@ -16,17 +16,14 @@ import xyz.lapig.iceberg.RestClient;
 public class LastFMContainer implements Callable {
     private JSONObject rootJSON;
     private String parsed;
-    private String url;
+    private int limit=20;
+    private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
-	public LastFMContainer(JSONObject base, String uri){
-        rootJSON=base;
-        parsed="";
-        url+=uri;
-        fetch_type="recenttracks";  sub_key="track";
-    }
+
     public LastFMContainer(String type, String user, String key){
-        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
+        this.user=user; this.type=type; this.key = key;
         parsed="";
         switch (type) {
             case "user.gettopalbums":
@@ -71,7 +68,14 @@ public class LastFMContainer implements Callable {
         }
 		return toFormattedString();
 	}
-
+    public void setUser(String s){
+        if(user.equals(s))
+            return;
+        user=s;
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
+        formattedOut=Html.fromHtml("");
+        parsed="";
+    }
 	public void updateBackground(){
         parsed="Update in progress";
         try {

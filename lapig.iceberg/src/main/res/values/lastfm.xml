@@ -2,5 +2,5 @@
     <string name="recent">user.getrecenttracks</string>
     <string name="albums">user.gettopalbums</string>
     <string name="artists">user.gettopartists</string>
-    <string name="user">lapigr</string>
+    <string name="user">username</string>
 </resources>
