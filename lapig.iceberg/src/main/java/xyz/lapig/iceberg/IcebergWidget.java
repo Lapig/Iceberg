@@ -38,7 +38,7 @@ public class IcebergWidget extends AppWidgetProvider {
         if (intent.getAction().equals(ACTION_TEXT_CHANGED)) {
             // handle intent here
             String s = intent.getStringExtra("updatedWidgetText");
-			Spanned formattedStr = Html.fromHtml(s, Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+			Spanned formattedStr = Html.fromHtml(s);
             views.setTextViewText(R.id.appwidget_text, formattedStr);
         }
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);

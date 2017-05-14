@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.support.design.widget.Snackbar;
-
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 
 /**
  * Created by Lapig on 4/23/2017.
@@ -44,13 +47,34 @@ public class SettingsActivity extends Activity {
                     SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
-                    editor.commit();
+                    editor.apply();
                     Globals.setUser(userTextField.getText().toString().toLowerCase());
                     snackAttack("committed change");
                 }
                 else{
                     snackAttack("else block");
                 }
+            }
+        });
+        userTextField.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_NULL) {
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
+                    editor.apply();
+                    Globals.setUser(userTextField.getText().toString().toLowerCase());
+                    ((TextView) findViewById(R.id.miscSettingsText)).setText("tttttttttt");
+
+                    getWindow().setSoftInputMode(
+                            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                    );
+                    snackAttack("enter-key commited change", 0);
+                    //mgr.hideSoftInputFromWindow(userTextField.getWindow(), 0);
+                    return true;
+                }
+                return false;
             }
         });
     }
@@ -77,5 +101,8 @@ public class SettingsActivity extends Activity {
     }
     public void snackAttack(String msg){
         Snackbar.make(findViewById(R.id.settingsView), msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+    }
+    public void snackAttack(String msg, int speed){
+        Snackbar.make(findViewById(R.id.settingsView), msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
     }
 }

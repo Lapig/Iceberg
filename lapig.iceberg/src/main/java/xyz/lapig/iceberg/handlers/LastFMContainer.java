@@ -1,5 +1,6 @@
 package xyz.lapig.iceberg.handlers;
 
+import android.annotation.TargetApi;
 import android.text.Html;
 import android.text.Spanned;
 
@@ -20,11 +21,13 @@ public class LastFMContainer implements Callable {
     private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
+	private boolean htmlAvail;
 
     public LastFMContainer(String type, String user, String key){
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
         this.user=user; this.type=type; this.key = key;
         parsed="";
+
         switch (type) {
             case "user.gettopalbums":
                 fetch_type = "topalbums";
@@ -41,15 +44,19 @@ public class LastFMContainer implements Callable {
             default:
                 return;
         }
-        formattedOut=Html.fromHtml("");
+        if(Html.fromHtml("") != null){
+            htmlAvail=true;
+        }
+        else{
+            htmlAvail=false;
+            formattedOut=Html.fromHtml("");
+        }
         updateBackground();
     }
     
 	
 	@Override
 	public Spanned call() {
-		if(formattedOut.length()>0)
-            return formattedOut;
 		parsed="Update in progress";
         try {
             RestClient.getSync(url, new JsonHttpResponseHandler(){
@@ -66,14 +73,20 @@ public class LastFMContainer implements Callable {
         catch(Exception e){
             System.err.println(e.toString());
         }
-		return toFormattedString();
+		return toSpanned();
 	}
     public void setUser(String s){
         if(user.equals(s))
             return;
         user=s;
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
-        formattedOut=Html.fromHtml("");
+        if(Html.fromHtml("") != null){
+            htmlAvail=false;
+        }
+        else{
+            htmlAvail=true;
+            formattedOut=Html.fromHtml("");
+        }
         parsed="";
     }
 	public void updateBackground(){
@@ -94,10 +107,19 @@ public class LastFMContainer implements Callable {
             System.err.println(e.toString());
         }
     }
-	
+    public boolean isEmpty(){
+        return formattedOut.length()==0;
+    }
+    public void clear(){
+        parsed="";
+        formattedOut=Html.fromHtml("");
+    }
+
+    public Spanned toSpanned(){
+            return toFormattedString();
+    }
+    @TargetApi(24)
 	public Spanned toFormattedString(){
-        if(formattedOut.length()>0)
-            return formattedOut;
 		String curr=""; StringBuilder fullText = new StringBuilder();
 	    try {
 		   JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
@@ -107,13 +129,14 @@ public class LastFMContainer implements Callable {
 
 			   fullText.append(i + 1).append(".  ").append(curr).append("<br>");
 		   }
-		   formattedOut=Html.fromHtml(fullText.toString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+		   formattedOut=Html.fromHtml(fullText.toString());
 	    }
 	    catch(Exception e){
 		   return toFormattedAlbumString();
 	    }
         return formattedOut;
 	}
+    @TargetApi(24)
 	public Spanned toFormattedAlbumString(){
 		String curr=""; StringBuilder fullText = new StringBuilder();
 		try {
@@ -122,22 +145,14 @@ public class LastFMContainer implements Callable {
 				curr = "<b>" + arr.getJSONObject(i).getString("name")+"</b> - <small>"+arr.getJSONObject(i).getString("playcount")+"</small>";
 				fullText.append(curr).append("<br>");
 			}
-			formattedOut=Html.fromHtml(fullText.toString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS);
+			formattedOut=Html.fromHtml(fullText.toString());
 		}
 		catch(Exception e){
 			System.err.println("JSON parse error");
 		}
         return formattedOut;
     }
-	
-    public boolean isEmpty(){
-            return formattedOut.length()==0;
-    }
-    public void clear(){
-        parsed="";
-        formattedOut=Html.fromHtml("");
-    }
-    public String toString(){
+    public String toPlainString(){
         if(parsed.length()>5){
             String curr=""; StringBuilder fullText = new StringBuilder();
            try {
@@ -150,12 +165,12 @@ public class LastFMContainer implements Callable {
                parsed= fullText.toString();
            }
            catch(Exception e){
-               return toAlbumsString();
+               return toPlainAlbumsString();
            }
         }
         return parsed;
     }
-    public String toAlbumsString(){
+    public String toPlainAlbumsString(){
         if(parsed.length()>5){
             String curr=""; StringBuilder fullText = new StringBuilder();
             try {
@@ -171,9 +186,5 @@ public class LastFMContainer implements Callable {
             }
         }
         return parsed;
-    }
-
-    public String toRawString(){
-        return rootJSON.toString();
     }
 }

@@ -11,6 +11,13 @@
                                                android:inputType="text"
                                                app:counterEnabled="false">
 
+    <TextView
+        android:id="@+id/miscSettingsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="TextView"/>
+
     <EditText
         android:id="@+id/settingsText"
         style="@style/Widget.AppCompat.EditText"

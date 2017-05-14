@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
         lastFMLookups[2]=artists;
 
+        //check if api >= 24
+        Globals.setHtmlAvailable(this.getApplicationContext(),(Html.fromHtml("") != null));
         updateExecuter = Executors.newCachedThreadPool();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -70,9 +72,6 @@ public class MainActivity extends AppCompatActivity {
                 //recent.updateBackground();
                 albums.updateBackground();
                 artists.updateBackground();
-                homeView.setText(Html.fromHtml("<b>"+"Title"+"</b>" +  "<br />" + 
-					"<small>" + "description" + "</small>" + "<br />" + 
-					"<small>" + "DateAdded" + "</small>"+"<br /><font color='#ff0000'>COLORED</font>", Html.FROM_HTML_OPTION_USE_CSS_COLORS));
             }}
         );
 
@@ -88,15 +87,17 @@ public class MainActivity extends AppCompatActivity {
                         activeTab=0;
                         break;
                     case 1:
-                        homeView.setText(albums.toFormattedString());
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(albums);
                         activeTab=1;
                         break;
                     case 2:
-                        homeView.setText(artists.toFormattedString());
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(artists);
                         activeTab=2;
                         break;
                     case -1:
-                        homeView.setText(recent.toFormattedString());
+                        homeView.setText(recent.toString());
                         break;
                     default:
                         snackAttack("default");
@@ -158,9 +159,13 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean widgetUpdateAsync(LastFMContainer target){
         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
-        intent.putExtra("updatedWidgetText", Html.toHtml(target.toFormattedString(), Html.FROM_HTML_OPTION_USE_CSS_COLORS)); //haha epic
+        intent.putExtra("updatedWidgetText", Html.toHtml(target.toSpanned())); //haha epic
         new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
         return true;
+    }
+    public boolean viewUpdateAsync(LastFMContainer target)
+    {
+        return viewUpdateAsync(target, false);
     }
 	public boolean viewUpdateAsync(LastFMContainer target, boolean widgetUpdate)
 	{
@@ -179,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+		//homeView.setText(recent.toString());
         if(widgetUpdate)
             widgetUpdateAsync(target);
         return true;
@@ -220,10 +226,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 1:
 
-                homeView.setText(albums.toFormattedString());
+                homeView.setText(albums.toSpanned());
                 break;
             case 2:
-                homeView.setText(artists.toFormattedString());
+                homeView.setText(artists.toSpanned());
                 break;
             default:
 			    viewUpdateAsync(recent, false);
