@@ -52,7 +52,6 @@ public class SettingsActivity extends Activity {
                     snackAttack("committed change");
                 }
                 else{
-                    snackAttack("else block");
                 }
             }
         });
@@ -77,6 +76,15 @@ public class SettingsActivity extends Activity {
                 return false;
             }
         });
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
+        Globals.setUser((userTextField.getText().toString()).toLowerCase());
+        editor.apply();
     }
     @Override
     public void onResume() {

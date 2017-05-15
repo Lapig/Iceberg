@@ -157,6 +157,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            intent.putExtra("user", user);
+            startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public boolean widgetUpdateAsync(LastFMContainer target){
         Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
         intent.putExtra("updatedWidgetText", Html.toHtml(target.toSpanned())); //haha epic
@@ -215,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(getString(R.string.user), user);
             editor.commit();
         }
+        snackAttack(Globals.getUser());
         updateExecuter = Executors.newCachedThreadPool();
 		try{
 		switch(activeTab){
@@ -248,19 +263,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-            intent.putExtra("user", user);
-            startActivity(intent);
-        }
-        return super.onOptionsItemSelected(item);
-    }
+
 
     @Override
     public void onDestroy() {
