@@ -24,6 +24,8 @@ import java.util.concurrent.Future;
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
+import static xyz.lapig.iceberg.IcebergWidget.ACTION_TEXT_CHANGED;
+
 public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout homeLayout;
@@ -60,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         lastFMLookups[2]=artists;
 
         //check if api >= 24
-        Globals.setHtmlAvailable(this.getApplicationContext(),(Html.fromHtml("") != null));
         updateExecuter = Executors.newCachedThreadPool();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -118,23 +119,18 @@ public class MainActivity extends AppCompatActivity {
                 try{
                 switch(tab.getPosition()){
                     case 0:
-                        Future<Spanned> fRecent = updateExecuter.submit(recent);
-                        Spanned responseRecent=fRecent.get();
-                        homeView.setText(responseRecent);
-
-                        widgetUpdateAsync(recent);
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(recent, true);
                         activeTab=0;
                         break;
                     case 1:
-                        Future<Spanned> fAlbums = updateExecuter.submit(albums);
-                        Spanned responseAlbums=fAlbums.get();
-                        homeView.setText(responseAlbums);
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(albums);
                         activeTab=1;
                         break;
                     case 2:
-                        Future<Spanned> fArtists = updateExecuter.submit(artists);
-                        Spanned responseArtists=fArtists.get();
-                        homeView.setText(responseArtists);
+                        homeView.setText("Updating..");
+                        viewUpdateAsync(artists);
                         activeTab=2;
                         break;
                     default:
@@ -172,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean widgetUpdateAsync(LastFMContainer target){
-        Intent intent = new Intent(IcebergWidget.ACTION_TEXT_CHANGED);
+        Intent intent = new Intent(ACTION_TEXT_CHANGED);
         intent.putExtra("updatedWidgetText", Html.toHtml(target.toSpanned())); //haha epic
         new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
         return true;

@@ -21,7 +21,6 @@ public class LastFMContainer implements Callable {
     private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
-	private boolean htmlAvail;
 
     public LastFMContainer(String type, String user, String key){
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
@@ -44,13 +43,8 @@ public class LastFMContainer implements Callable {
             default:
                 return;
         }
-        if(Html.fromHtml("") != null){
-            htmlAvail=true;
-        }
-        else{
-            htmlAvail=false;
-            formattedOut=Html.fromHtml("");
-        }
+
+        formattedOut=Html.fromHtml("");
         updateBackground();
     }
     
@@ -80,13 +74,8 @@ public class LastFMContainer implements Callable {
             return;
         user=s;
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
-        if(Html.fromHtml("") != null){
-            htmlAvail=false;
-        }
-        else{
-            htmlAvail=true;
-            formattedOut=Html.fromHtml("");
-        }
+
+        formattedOut=Html.fromHtml("");
         parsed="";
     }
 	public void updateBackground(){
@@ -115,6 +104,7 @@ public class LastFMContainer implements Callable {
         formattedOut=Html.fromHtml("");
     }
 
+    //really cant explain this one
     public Spanned toSpanned(){
             return toFormattedString();
     }
