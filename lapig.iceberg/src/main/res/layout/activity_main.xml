@@ -96,8 +96,9 @@
             android:isScrollContainer="true"
             android:scrollHorizontally="false"
             android:scrollbars="vertical"
-            android:text="Click tab pray 4 rest"
-            tools:text="Click button pray 4 rest"/>
+            android:text=""
+            tools:text=""/>
+
     </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

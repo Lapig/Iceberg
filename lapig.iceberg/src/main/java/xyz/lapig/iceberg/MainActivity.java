@@ -50,29 +50,14 @@ public class MainActivity extends AppCompatActivity {
         homeView = (TextView)findViewById(R.id.textView);
         activeTab=-1;
 
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        user = sharedPref.getString(getString(R.string.user), "lapigr");
-        Globals.setUser(user);
-
-        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
-        lastFMLookups[0]=recent;
-        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
-        lastFMLookups[1]=albums;
-        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
-        lastFMLookups[2]=artists;
-
-        //check if api >= 24
-        updateExecuter = Executors.newCachedThreadPool();
-
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 snackAttack("Clearing stored data");
                 recent.clear();
-                //recent.updateBackground();
-                albums.updateBackground();
-                artists.updateBackground();
+                albums.clear();
+                artists.clear();
             }}
         );
 
@@ -143,13 +128,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        try{
-            Future<Spanned> fRecent = updateExecuter.submit(recent);
-            Spanned responseRecent=fRecent.get();
-            homeView.setText(responseRecent);
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        user = sharedPref.getString(getString(R.string.user), "lapigr");
+        Globals.setUser(user);
+
+        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
+        lastFMLookups[0]=recent;
+        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
+        lastFMLookups[1]=albums;
+        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
+        lastFMLookups[2]=artists;
+
+        updateExecuter = Executors.newCachedThreadPool();
+        
+        if(homeView.getText().length()==0){
+            homeView.setText("Empty cache, select a tab or reselect active tab");
         }
-        catch(Exception e){
-            e.printStackTrace();
+        else{
+            homeView.setText(homeView.getText().length());
         }
     }
 
@@ -173,18 +170,16 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
         return true;
     }
-    public boolean viewUpdateAsync(LastFMContainer target)
-    {
-        return viewUpdateAsync(target, false);
-    }
-	public boolean viewUpdateAsync(LastFMContainer target, boolean widgetUpdate)
+
+
+    public boolean viewUpdateAsync(final LastFMContainer target){return viewUpdateAsync(target, false);}
+	public boolean viewUpdateAsync(final LastFMContainer target, boolean widgetUpdate)
 	{
-		Handler handler = new Handler();
-        final Future<Spanned> fRecent = updateExecuter.submit(target);
-        
-        handler.post(new Runnable(){
+        //may be commiting a crime here not sure
+        new Runnable(){
             public void run(){
                 try{
+                final Future<Spanned> fRecent = updateExecuter.submit(target);
                 Spanned responseRecent = fRecent.get();
                 homeView.setText(responseRecent);
                 }
@@ -193,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        });
+        }.run();
 		//homeView.setText(recent.toString());
         if(widgetUpdate)
             widgetUpdateAsync(target);
@@ -216,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        snackAttack(Globals.getUser());
+        snackAttack("on resume - user: "+Globals.getUser());
         if(!user.equals(Globals.getUser())){
             user=Globals.getUser();
             updateContainers(user);
@@ -225,25 +220,19 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(getString(R.string.user), user);
             editor.commit();
         }
-        snackAttack(Globals.getUser());
         updateExecuter = Executors.newCachedThreadPool();
 		try{
 		switch(activeTab){
             case 0:
-                Future<Spanned> fRecent = updateExecuter.submit(recent);
-                Spanned responseRecent=fRecent.get();
-                homeView.setText(responseRecent);
-				widgetUpdateAsync(recent);
+                viewUpdateAsync(recent, true);
                 break;
             case 1:
-
-                homeView.setText(albums.toSpanned());
+                viewUpdateAsync(albums, false);
                 break;
             case 2:
-                homeView.setText(artists.toSpanned());
+                viewUpdateAsync(artists, false);
                 break;
             default:
-			    viewUpdateAsync(recent, false);
                 activeTab=0;
 				break;
         }

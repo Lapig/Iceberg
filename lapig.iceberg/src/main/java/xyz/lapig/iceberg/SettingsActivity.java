@@ -26,7 +26,7 @@ public class SettingsActivity extends Activity {
         setContentView(R.layout.settings_activity);
         Intent intent = getIntent();
         String user = intent.getStringExtra("user");
-        userTextField = (EditText) findViewById(R.id.settingsText);
+        userTextField = (EditText) findViewById(R.id.userNameSetting);
         userTextField.setText(user);
         final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(userTextField.getWindowToken(), 0);
@@ -64,7 +64,6 @@ public class SettingsActivity extends Activity {
                     editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
                     editor.apply();
                     Globals.setUser(userTextField.getText().toString().toLowerCase());
-                    ((TextView) findViewById(R.id.miscSettingsText)).setText("tttttttttt");
 
                     getWindow().setSoftInputMode(
                             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN

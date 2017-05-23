@@ -45,7 +45,6 @@ public class LastFMContainer implements Callable {
         }
 
         formattedOut=Html.fromHtml("");
-        updateBackground();
     }
     
 	
@@ -56,18 +55,27 @@ public class LastFMContainer implements Callable {
             RestClient.getSync(url, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
-                	parsed="error";
+                    parsed="failure";
 				}
+                @Override
+                public void onFailure(int i, Header[] h, String s, Throwable t){
+                    parsed="failure";
+                }
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response){
                     rootJSON=response;
                 }
+                
             });
         }
         catch(Exception e){
             System.err.println(e.toString());
         }
+        if(parsed.equals("failure"))
+            return (Html.fromHtml("No Connection !"));
+
 		return toSpanned();
+
 	}
     public void setUser(String s){
         if(user.equals(s))
@@ -78,24 +86,7 @@ public class LastFMContainer implements Callable {
         formattedOut=Html.fromHtml("");
         parsed="";
     }
-	public void updateBackground(){
-        parsed="Update in progress";
-        try {
-            RestClient.get(url, new JsonHttpResponseHandler(){
-                @Override
-                public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
-                	parsed="error";
-				}
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-                    rootJSON=response;
-                }
-            });
-        }
-        catch(Exception e){
-            System.err.println(e.toString());
-        }
-    }
+    
     public boolean isEmpty(){
         return formattedOut.length()==0;
     }

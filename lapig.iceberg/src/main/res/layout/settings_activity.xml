@@ -1,40 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.TextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                               xmlns:app="http://schemas.android.com/apk/res-auto"
-                                               android:layout_width="match_parent"
-                                               android:layout_height="match_parent"
-                                               android:id="@+id/settingsView"
-                                               android:clickable="true"
-                                               android:focusable="true"
-                                               android:focusableInTouchMode="true"
-                                               android:hint="meme"
-                                               android:inputType="text"
-                                               app:counterEnabled="false">
-
-    <TextView
-        android:id="@+id/miscSettingsText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="TextView"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                         xmlns:app="http://schemas.android.com/apk/res-auto"
+                                         android:id="@+id/settingsView"
+                                         android:layout_width="match_parent"
+                                         android:layout_height="match_parent"
+                                         android:clickable="true"
+                                         android:focusable="true"
+                                         android:focusableInTouchMode="true"
+                                         android:inputType="none"
+                                         app:counterEnabled="false"
+              android:orientation="vertical">
 
     <EditText
-        android:id="@+id/settingsText"
+        android:id="@+id/userNameSetting"
         style="@style/Widget.AppCompat.EditText"
         android:layout_width="match_parent"
-        android:layout_height="95dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:ems="10"
         android:enabled="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:hint="enter ur favorite meme"
+        android:hint="username"
         android:inputType="text"
         android:linksClickable="true"
         android:longClickable="true"
         android:textDirection="inherit"
         android:textIsSelectable="true">
 
-        <requestFocus/>
+        <requestFocus
+            />
     </EditText>
 
-</android.support.design.widget.TextInputLayout>
+    <EditText
+        android:id="@+id/fetchLimitSetting"
+        style="@style/Widget.AppCompat.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:enabled="true"
+        android:focusable="true"
+        android:ems="10"
+        android:inputType="text"
+        android:textIsSelectable="true"
+        android:text="fetch limit"/>
+
+
+</LinearLayout>
