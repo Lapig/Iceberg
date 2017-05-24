@@ -3,29 +3,33 @@ package xyz.lapig.iceberg.handlers;
 import android.annotation.TargetApi;
 import android.text.Html;
 import android.text.Spanned;
+import android.content.Intent;
+import android.content.Context;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.concurrent.Callable;
+import android.os.AsyncTask;
 
 import cz.msebera.android.httpclient.Header;
 import xyz.lapig.iceberg.RestClient;
 
-public class LastFMContainer implements Callable {
+public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
     private JSONObject rootJSON;
     private String parsed;
     private int limit=20;
     private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
+    private Context mainContext;
 
-    public LastFMContainer(String type, String user, String key){
+    public LastFMContainer(String type, String user, String key, Context c){
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
         this.user=user; this.type=type; this.key = key;
         parsed="";
+        mainContext=c;
 
         switch (type) {
             case "user.gettopalbums":
@@ -47,10 +51,9 @@ public class LastFMContainer implements Callable {
         formattedOut=Html.fromHtml("");
     }
     
-	
-	@Override
-	public Spanned call() {
-		parsed="Update in progress";
+    @Override
+    public Spanned doInBackground(Void... v){
+        parsed="Update in progress";
         try {
             RestClient.getSync(url, new JsonHttpResponseHandler(){
                 @Override
@@ -75,8 +78,18 @@ public class LastFMContainer implements Callable {
             return (Html.fromHtml("No Connection !"));
 
 		return toSpanned();
+    }
+    @Override
+    public void onProgressUpdate(Integer... progress) {
+     }
 
-	}
+    @Override
+    public void onPostExecute(Spanned result){
+        Intent i = new Intent("android.intent.action.DATA_UPDATE").putExtra("htmlResponse", Html.toHtml(toFormattedString()));
+		mainContext.sendBroadcast(i);
+    }
+
+	
     public void setUser(String s){
         if(user.equals(s))
             return;
@@ -101,7 +114,11 @@ public class LastFMContainer implements Callable {
     }
     @TargetApi(24)
 	public Spanned toFormattedString(){
-		String curr=""; StringBuilder fullText = new StringBuilder();
+        if(parsed.equals("failure")){
+            return Html.fromHtml("<b>No Connection</b>");
+        }
+		String curr=""; 
+        StringBuilder fullText = new StringBuilder();
 	    try {
 		   JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
 		   for (int i = 0; i < arr.length(); i++) {
@@ -132,40 +149,5 @@ public class LastFMContainer implements Callable {
 			System.err.println("JSON parse error");
 		}
         return formattedOut;
-    }
-    public String toPlainString(){
-        if(parsed.length()>5){
-            String curr=""; StringBuilder fullText = new StringBuilder();
-           try {
-               JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
-               for (int i = 0; i < arr.length(); i++) {
-                   curr = arr.getJSONObject(i).getJSONObject("artist").getString("#text");
-                   curr += "\n" + arr.getJSONObject(i).getString("name");
-                   fullText.append(i + 1).append(".").append(curr).append("\n");
-               }
-               parsed= fullText.toString();
-           }
-           catch(Exception e){
-               return toPlainAlbumsString();
-           }
-        }
-        return parsed;
-    }
-    public String toPlainAlbumsString(){
-        if(parsed.length()>5){
-            String curr=""; StringBuilder fullText = new StringBuilder();
-            try {
-                JSONArray arr = rootJSON.getJSONObject(fetch_type).getJSONArray(sub_key);
-                for (int i = 0; i < arr.length(); i++) {
-                    curr = arr.getJSONObject(i).getString("name")+"  "+arr.getJSONObject(i).getString("playcount");
-                    fullText.append(curr).append("\n");
-                }
-                parsed= fullText.toString();
-            }
-            catch(Exception e){
-                System.err.println("JSON parse error");
-            }
-        }
-        return parsed;
     }
 }

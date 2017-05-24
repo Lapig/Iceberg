@@ -3,8 +3,12 @@ package xyz.lapig.iceberg;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,10 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
@@ -36,9 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private LastFMContainer lastFMLookups[] = new LastFMContainer[3];
     private String user="";
     private TextView homeView;
-
-	private ExecutorService updateExecuter;
-
+    private BroadcastReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         homeLayout = (CoordinatorLayout) findViewById(R.id.home_view);
         homeView = (TextView)findViewById(R.id.textView);
+        
         activeTab=-1;
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -69,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(recent, true);
+                        viewUpdateAsync(recent);
+         //               widgetUpdate(recent);
                         activeTab=0;
                         break;
                     case 1:
@@ -82,11 +82,7 @@ public class MainActivity extends AppCompatActivity {
                         viewUpdateAsync(artists);
                         activeTab=2;
                         break;
-                    case -1:
-                        homeView.setText(recent.toString());
-                        break;
                     default:
-                        snackAttack("default");
                         break;
                 }
 			  }
@@ -105,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(recent, true);
+                        viewUpdateAsync(recent);
                         activeTab=0;
                         break;
                     case 1:
@@ -133,15 +129,10 @@ public class MainActivity extends AppCompatActivity {
         user = sharedPref.getString(getString(R.string.user), "lapigr");
         Globals.setUser(user);
 
-        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key));
-        lastFMLookups[0]=recent;
-        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key));
-        lastFMLookups[1]=albums;
-        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key));
-        lastFMLookups[2]=artists;
-
-        updateExecuter = Executors.newCachedThreadPool();
-        
+        recent=new LastFMContainer(getString(R.string.recent),user,getString(R.string.api_key), getApplicationContext()); lastFMLookups[0]=recent;
+        albums=new LastFMContainer(getString(R.string.albums),user,getString(R.string.api_key), getApplicationContext()); lastFMLookups[1]=albums;
+        artists=new LastFMContainer(getString(R.string.artists),user,getString(R.string.api_key), getApplicationContext()); lastFMLookups[2]=artists;
+       
         if(homeView.getText().length()==0){
             homeView.setText("Empty cache, select a tab or reselect active tab");
         }
@@ -152,9 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
@@ -164,39 +152,17 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public boolean widgetUpdateAsync(LastFMContainer target){
+    public void widgetUpdate(LastFMContainer target){
         Intent intent = new Intent(ACTION_TEXT_CHANGED);
         intent.putExtra("updatedWidgetText", Html.toHtml(target.toSpanned())); //haha epic
-        new Thread(new BackgroundTasks(0,getApplicationContext(), intent)).start();
-        return true;
+        this.sendBroadcast(intent);
     }
 
-
-    public boolean viewUpdateAsync(final LastFMContainer target){return viewUpdateAsync(target, false);}
-	public boolean viewUpdateAsync(final LastFMContainer target, boolean widgetUpdate)
+	public void viewUpdateAsync(final LastFMContainer target)
 	{
-        //may be commiting a crime here not sure
-        new Runnable(){
-            public void run(){
-                try{
-                final Future<Spanned> fRecent = updateExecuter.submit(target);
-                Spanned responseRecent = fRecent.get();
-                homeView.setText(responseRecent);
-                }
-                catch(Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }.run();
-		//homeView.setText(recent.toString());
-        if(widgetUpdate)
-            widgetUpdateAsync(target);
-        return true;
+        target.execute();    
     }
-    public void snackAttack(String msg){
-        Snackbar.make(homeLayout, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
-    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -205,12 +171,26 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onPause() {
-        super.onPause();  // Always call the superclass method first
-        updateExecuter.shutdown();
+        super.onPause(); 
+        this.unregisterReceiver(this.mReceiver);
     }
     @Override
     public void onResume() {
         super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter("android.intent.action.DATA_UPDATE");
+        mReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				//extract our message from intent
+				String responseMsg = intent.getStringExtra("htmlResponse");
+				//log our message value
+				homeView.setText(Html.fromHtml(responseMsg));
+ 
+			}
+		};
+        this.registerReceiver(mReceiver, intentFilter);
+
         snackAttack("on resume - user: "+Globals.getUser());
         if(!user.equals(Globals.getUser())){
             user=Globals.getUser();
@@ -220,17 +200,16 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(getString(R.string.user), user);
             editor.commit();
         }
-        updateExecuter = Executors.newCachedThreadPool();
 		try{
 		switch(activeTab){
             case 0:
-                viewUpdateAsync(recent, true);
+                viewUpdateAsync(recent);
                 break;
             case 1:
-                viewUpdateAsync(albums, false);
+                viewUpdateAsync(albums);
                 break;
             case 2:
-                viewUpdateAsync(artists, false);
+                viewUpdateAsync(artists);
                 break;
             default:
                 activeTab=0;
@@ -242,14 +221,6 @@ public class MainActivity extends AppCompatActivity {
 			snackAttack("Interruption error");
 		}
     }
-    private void updateContainers(String s){
-        for(LastFMContainer l : lastFMLookups){
-            l.setUser(s);
-        }
-    }
-
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -257,7 +228,16 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(getString(R.string.user), user);
         editor.commit();
-        updateExecuter.shutdown();
-        updateExecuter=null;
     }
+    ///utils
+    private void updateContainers(String s){
+        for(LastFMContainer l : lastFMLookups){
+            l.setUser(s);
+        }
+    }
+    public void snackAttack(String msg){
+        Snackbar.make(homeLayout, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+    }
+    /////
+    
 }
