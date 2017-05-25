@@ -1,17 +1,16 @@
 package xyz.lapig.iceberg.handlers;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.text.Html;
 import android.text.Spanned;
-import android.content.Intent;
-import android.content.Context;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import android.os.AsyncTask;
 
 import cz.msebera.android.httpclient.Header;
 import xyz.lapig.iceberg.RestClient;
@@ -23,7 +22,7 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
     private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
-    private Context mainContext;
+    private static Context mainContext;
 
     public LastFMContainer(String type, String user, String key, Context c){
         url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);

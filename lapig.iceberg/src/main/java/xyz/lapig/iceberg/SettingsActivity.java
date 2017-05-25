@@ -1,5 +1,6 @@
 package xyz.lapig.iceberg;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -106,9 +107,11 @@ public class SettingsActivity extends Activity {
             imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         }
     }
+    @SuppressLint("WrongViewCast")
     public void snackAttack(String msg){
         Snackbar.make(findViewById(R.id.settingsView), msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
+    @SuppressLint("WrongViewCast")
     public void snackAttack(String msg, int speed){
         Snackbar.make(findViewById(R.id.settingsView), msg, Snackbar.LENGTH_INDEFINITE).setAction("Action", null).show();
     }
