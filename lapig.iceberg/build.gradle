@@ -19,8 +19,13 @@ android {
         }
         debug {
         }
+		
     }
     productFlavors {
+	kitkat{
+			minSdkVersion '19'
+			targetSdkVersion '25'
+		}
     }
 }
 

@@ -14,9 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.Menu;
+import android.text.Spanned;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+
+import android.os.AsyncTask;
+
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
@@ -53,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
                 recent.clear();
                 albums.clear();
                 artists.clear();
+
+                //memebutton for cavemen
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                intent.putExtra("user", user);
+                startActivity(intent);
             }}
         );
 
@@ -63,19 +73,16 @@ public class MainActivity extends AppCompatActivity {
 			  try{
                 switch(tab.getPosition()){
                     case 0:
-                        homeView.setText("Updating..");
-                        viewUpdateAsync(recent);
+                        viewUpdate(recent);
          //               widgetUpdate(recent);
                         activeTab=0;
                         break;
                     case 1:
-                        homeView.setText("Updating..");
-                        viewUpdateAsync(albums);
+                        viewUpdate(albums);
                         activeTab=1;
                         break;
                     case 2:
-                        homeView.setText("Updating..");
-                        viewUpdateAsync(artists);
+                        viewUpdate(artists);
                         activeTab=2;
                         break;
                     default:
@@ -97,17 +104,17 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(recent);
+                        viewUpdate(recent);
                         activeTab=0;
                         break;
                     case 1:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(albums);
+                        viewUpdate(albums);
                         activeTab=1;
                         break;
                     case 2:
                         homeView.setText("Updating..");
-                        viewUpdateAsync(artists);
+                        viewUpdate(artists);
                         activeTab=2;
                         break;
                     default:
@@ -154,9 +161,27 @@ public class MainActivity extends AppCompatActivity {
         this.sendBroadcast(intent);
     }
 
-	public void viewUpdateAsync(final LastFMContainer target)
+	public void viewUpdate(final LastFMContainer target)
 	{
-        target.execute();    
+        new SimplyEpic(target).execute(); 
+    }
+    static class SimplyEpic extends AsyncTask<Void,Integer,Spanned> {
+        private LastFMContainer node;
+        public SimplyEpic(LastFMContainer fm){
+            node=fm;
+        }
+        @Override
+        public Spanned doInBackground(Void... v){
+            return node.doInBackground();
+        }
+        @Override
+        public void onProgressUpdate(Integer... progress) {
+        }
+
+        @Override
+        public void onPostExecute(Spanned result){
+            node.onPostExecute(result);
+        }
     }
     
     @Override
@@ -178,11 +203,8 @@ public class MainActivity extends AppCompatActivity {
         mReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				//extract our message from intent
-				String responseMsg = intent.getStringExtra("htmlResponse");
-				//log our message value
-				homeView.setText(Html.fromHtml(responseMsg));
- 
+				Spanned responseMsg = (Spanned)(intent.getExtras().get("htmlResponse"));
+				homeView.setText((responseMsg));
 			}
 		};
         this.registerReceiver(mReceiver, intentFilter);
@@ -199,13 +221,13 @@ public class MainActivity extends AppCompatActivity {
 		try{
 		switch(activeTab){
             case 0:
-                viewUpdateAsync(recent);
+                viewUpdate(recent);
                 break;
             case 1:
-                viewUpdateAsync(albums);
+                viewUpdate(albums);
                 break;
             case 2:
-                viewUpdateAsync(artists);
+                viewUpdate(artists);
                 break;
             default:
                 activeTab=0;
@@ -230,6 +252,9 @@ public class MainActivity extends AppCompatActivity {
         for(LastFMContainer l : lastFMLookups){
             l.setUser(s);
         }
+    }
+    private LastFMContainer activeContainer(){
+        return lastFMLookups[activeTab];
     }
     public void snackAttack(String msg){
         Snackbar.make(homeLayout, msg, Snackbar.LENGTH_SHORT).setAction("Action", null).show();

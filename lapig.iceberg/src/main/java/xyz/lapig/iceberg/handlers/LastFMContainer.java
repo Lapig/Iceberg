@@ -3,7 +3,6 @@ package xyz.lapig.iceberg.handlers;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.text.Html;
 import android.text.Spanned;
 
@@ -15,21 +14,25 @@ import org.json.JSONObject;
 import cz.msebera.android.httpclient.Header;
 import xyz.lapig.iceberg.RestClient;
 
-public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
+public class LastFMContainer{
+
+    public enum State { INIT, FAILURE, UNPARSED, PARSED}
+
     private JSONObject rootJSON;
-    private String parsed;
-    private int limit=20;
+    private int limit;
     private String url, type, user, key;
     private String fetch_type, sub_key;
 	private Spanned formattedOut;
+    private State state;
     private static Context mainContext;
 
     public LastFMContainer(String type, String user, String key, Context c){
-        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
         this.user=user; this.type=type; this.key = key;
-        parsed="";
         mainContext=c;
-
+        limit=20;
+        state=State.INIT;
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
+        
         switch (type) {
             case "user.gettopalbums":
                 fetch_type = "topalbums";
@@ -52,39 +55,44 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
     
     @Override
     public Spanned doInBackground(Void... v){
-        parsed="Update in progress";
+        if(state==State.PARSED)
+            return formattedOut;
+        else{
+            Intent i = new Intent("android.intent.action.DATA_UPDATE").putExtra("htmlResponse", Html.fromHtml("Updating.."));
+		    mainContext.sendBroadcast(i);
+        }
         try {
             RestClient.getSync(url, new JsonHttpResponseHandler(){
                 @Override
                 public void onFailure(int i, Header[] headers, Throwable throwable, JSONObject j) {
-                    parsed="failure";
+                    state=State.FAILURE;
 				}
                 @Override
                 public void onFailure(int i, Header[] h, String s, Throwable t){
-                    parsed="failure";
+                    state=State.FAILURE;
                 }
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response){
                     rootJSON=response;
-                }
-                
+                    state=State.UNPARSED;
+                } 
             });
         }
         catch(Exception e){
             System.err.println(e.toString());
         }
-        if(parsed.equals("failure"))
-            return (Html.fromHtml("No Connection !"));
+        if(state==State.FAILURE)
+            return (Html.fromHtml("<b>No Connection !</b>"));
 
 		return toSpanned();
     }
     @Override
     public void onProgressUpdate(Integer... progress) {
-     }
+    }
 
     @Override
     public void onPostExecute(Spanned result){
-        Intent i = new Intent("android.intent.action.DATA_UPDATE").putExtra("htmlResponse", Html.toHtml(toFormattedString()));
+        Intent i = new Intent("android.intent.action.DATA_UPDATE").putExtra("htmlResponse", result);
 		mainContext.sendBroadcast(i);
     }
 
@@ -93,18 +101,30 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
         if(user.equals(s))
             return;
         user=s;
-        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit=20";
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+user+"&api_key="+key+"&format=json&limit="+Integer.toString(limit);
 
         formattedOut=Html.fromHtml("");
-        parsed="";
     }
-    
+    public String getState(){
+        switch(state){
+            case INIT:
+                return "INIT";
+            case FAILURE:
+                return "FAILURE";
+            case UNPARSED:
+                return "UNPARSED";
+            case PARSED:
+                return "PARSED";
+            default:
+                return "SEND HELP";
+        }
+    }
     public boolean isEmpty(){
         return formattedOut.length()==0;
     }
     public void clear(){
-        parsed="";
         formattedOut=Html.fromHtml("");
+        state=State.INIT;
     }
 
     //really cant explain this one
@@ -113,9 +133,10 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
     }
     @TargetApi(24)
 	public Spanned toFormattedString(){
-        if(parsed.equals("failure")){
-            return Html.fromHtml("<b>No Connection</b>");
-        }
+        if(state==State.FAILURE)
+            return Html.fromHtml("<b>No Connection !</b>");
+        else if (state==State.PARSED)
+            return formattedOut;
 		String curr=""; 
         StringBuilder fullText = new StringBuilder();
 	    try {
@@ -131,6 +152,7 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
 	    catch(Exception e){
 		   return toFormattedAlbumString();
 	    }
+        state=State.PARSED;
         return formattedOut;
 	}
     @TargetApi(24)
@@ -147,6 +169,7 @@ public class LastFMContainer extends AsyncTask<Void,Integer,Spanned> {
 		catch(Exception e){
 			System.err.println("JSON parse error");
 		}
+        state=State.PARSED;
         return formattedOut;
     }
 }
