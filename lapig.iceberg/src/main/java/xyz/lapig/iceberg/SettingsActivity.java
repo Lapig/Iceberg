@@ -34,12 +34,6 @@ public class SettingsActivity extends Activity {
         mgr.showSoftInput(userTextField, InputMethodManager.SHOW_IMPLICIT);
 
 
-        userTextField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mgr.showSoftInput(userTextField, InputMethodManager.SHOW_IMPLICIT);
-            }
-        });
         userTextField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {

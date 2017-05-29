@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         viewUpdate(recent);
-         //               widgetUpdate(recent);
+                        widgetUpdate(recent);
                         activeTab=0;
                         break;
                     case 1:

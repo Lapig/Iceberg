@@ -53,7 +53,6 @@ public class LastFMContainer{
         formattedOut=Html.fromHtml("");
     }
     
-    @Override
     public Spanned doInBackground(Void... v){
         if(state==State.PARSED)
             return formattedOut;
@@ -86,11 +85,9 @@ public class LastFMContainer{
 
 		return toSpanned();
     }
-    @Override
     public void onProgressUpdate(Integer... progress) {
     }
 
-    @Override
     public void onPostExecute(Spanned result){
         Intent i = new Intent("android.intent.action.DATA_UPDATE").putExtra("htmlResponse", result);
 		mainContext.sendBroadcast(i);
