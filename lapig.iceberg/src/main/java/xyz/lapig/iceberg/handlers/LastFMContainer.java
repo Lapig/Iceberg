@@ -123,6 +123,9 @@ public class LastFMContainer{
         formattedOut=Html.fromHtml("");
         state=State.INIT;
     }
+    public Spanned getFormattedOut(){
+        return formattedOut;
+    }
 
     //really cant explain this one
     public Spanned toSpanned(){

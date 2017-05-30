@@ -44,7 +44,6 @@ public class SettingsActivity extends Activity {
                     editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
                     editor.apply();
                     Globals.setUser(userTextField.getText().toString().toLowerCase());
-                    snackAttack("committed change");
                 }
                 else{
                 }

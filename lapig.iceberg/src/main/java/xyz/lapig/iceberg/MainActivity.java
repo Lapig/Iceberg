@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -13,15 +14,11 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.view.Menu;
 import android.text.Spanned;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-
-import android.os.AsyncTask;
-
 
 import xyz.lapig.iceberg.handlers.LastFMContainer;
 
@@ -45,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         homeLayout = (CoordinatorLayout) findViewById(R.id.home_view);
         homeView = (TextView)findViewById(R.id.textView);
         
@@ -58,11 +57,6 @@ public class MainActivity extends AppCompatActivity {
                 recent.clear();
                 albums.clear();
                 artists.clear();
-
-                //memebutton for cavemen
-                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra("user", user);
-                startActivity(intent);
             }}
         );
 
@@ -74,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()){
                     case 0:
                         viewUpdate(recent);
-                        widgetUpdate(recent);
                         activeTab=0;
                         break;
                     case 1:
@@ -157,7 +150,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void widgetUpdate(LastFMContainer target){
         Intent intent = new Intent(ACTION_TEXT_CHANGED);
-        intent.putExtra("updatedWidgetText", Html.toHtml(target.toSpanned())); //haha epic
+        String s=Html.toHtml(target.getFormattedOut());
+
+        intent.putExtra("updatedWidgetText", s); //haha epic
         this.sendBroadcast(intent);
     }
 
@@ -205,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
 			public void onReceive(Context context, Intent intent) {
 				Spanned responseMsg = (Spanned)(intent.getExtras().get("htmlResponse"));
 				homeView.setText((responseMsg));
+				widgetUpdate(recent);
 			}
 		};
         this.registerReceiver(mReceiver, intentFilter);

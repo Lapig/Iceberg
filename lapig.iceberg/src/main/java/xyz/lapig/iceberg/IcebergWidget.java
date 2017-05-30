@@ -5,9 +5,11 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.RemoteViews;
+import android.graphics.Color;
 import android.text.Html;
 import android.text.Spanned;
+import android.widget.RemoteViews;
+
 /**
  * Widget
  */
@@ -37,9 +39,14 @@ public class IcebergWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.iceberg_widget);
         if (intent.getAction().equals(ACTION_TEXT_CHANGED)) {
             // handle intent here
+
             String s = intent.getStringExtra("updatedWidgetText");
+            if(s==null)
+                return;
 			Spanned formattedStr = Html.fromHtml(s);
-            views.setTextViewText(R.id.appwidget_text, formattedStr);
+			//TextView widgetText =
+            views.setTextViewText(R.id.widgetTextview, formattedStr);
+            views.setInt(R.id.widgetTextview, "setTextColor", Color.rgb(255,255,255));
         }
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         appWidgetManager.updateAppWidget(new ComponentName(context,IcebergWidget.class.getName()), views);
