@@ -20,7 +20,8 @@ import android.widget.TextView;
  */
 
 public class SettingsActivity extends Activity {
-    EditText userTextField;
+    private EditText userTextField;
+    private EditText limitTextField;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +30,8 @@ public class SettingsActivity extends Activity {
         String user = intent.getStringExtra("user");
         userTextField = (EditText) findViewById(R.id.userNameSetting);
         userTextField.setText(user);
+        limitTextField = (EditText) findViewById(R.id.fetchLimitSetting);
+
         final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(userTextField.getWindowToken(), 0);
         mgr.showSoftInput(userTextField, InputMethodManager.SHOW_IMPLICIT);
@@ -38,7 +41,6 @@ public class SettingsActivity extends Activity {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    // EditText lost focus
                     SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
@@ -63,7 +65,6 @@ public class SettingsActivity extends Activity {
                             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
                     );
                     snackAttack("enter-key commited change", 0);
-                    //mgr.hideSoftInputFromWindow(userTextField.getWindow(), 0);
                     return true;
                 }
                 return false;
@@ -78,19 +79,26 @@ public class SettingsActivity extends Activity {
         editor.putString(getString(R.string.user), (userTextField.getText().toString()).toLowerCase());
         Globals.setUser((userTextField.getText().toString()).toLowerCase());
         editor.apply();
+
+        editor.putString(getString(R.string.limit), (limitTextField.getText().toString()));
+        Globals.setLimit((limitTextField.getText().toString()));
+        editor.apply();
+
+        Globals.setUpdateNeeded(true);
     }
     @Override
     public void onResume() {
         super.onResume();
-        //SharedPreferences sharedPref = getParent().getPreferences(Context.MODE_PRIVATE);
-        //userTextField.setText(sharedPref.getString(getString(R.string.user), "lapigr"));
-        userTextField.setText(Globals.getUser());
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        if(sharedPref.contains(getString(R.string.user)))
+            userTextField.setText(sharedPref.getString(getString(R.string.user), "lapigr"));
+        if(sharedPref.contains(getString(R.string.limit)))
+            limitTextField.setText(sharedPref.getString(getString(R.string.limit), "20"));
+        limitTextField.setText(Globals.getLimit());
     }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-
         if(hasFocus){
-
         }
     }
     public void showSoftKeyboard(View view) {

@@ -60,7 +60,7 @@
         android:enabled="true"
         android:focusable="true"
         android:hint="20"
-        android:inputType="text"
+        android:inputType="number"
         android:onClick="showSoftKeyboard"
         android:textIsSelectable="true"/>
 

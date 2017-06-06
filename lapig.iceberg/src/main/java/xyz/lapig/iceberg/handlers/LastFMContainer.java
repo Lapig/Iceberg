@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import xyz.lapig.iceberg.Globals;
 import xyz.lapig.iceberg.RestClient;
 
 public class LastFMContainer{
@@ -93,7 +94,9 @@ public class LastFMContainer{
 		mainContext.sendBroadcast(i);
     }
 
-	
+	public void updateUrl(){
+        url="http://ws.audioscrobbler.com/2.0/?method="+type+"&user="+ Globals.getUser()+"&api_key="+key+"&format=json&limit="+Globals.getLimit();
+    }
     public void setUser(String s){
         if(user.equals(s))
             return;

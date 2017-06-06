@@ -3,4 +3,5 @@
     <string name="albums">user.gettopalbums</string>
     <string name="artists">user.gettopartists</string>
     <string name="user">username</string>
+    <string name="limit">fetchlimit</string>
 </resources>

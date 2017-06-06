@@ -206,14 +206,11 @@ public class MainActivity extends AppCompatActivity {
         this.registerReceiver(mReceiver, intentFilter);
 
         snackAttack("on resume - user: "+Globals.getUser());
-        if(!user.equals(Globals.getUser())){
-            user=Globals.getUser();
-            updateContainers(user);
-            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(getString(R.string.user), user);
-            editor.apply();
+
+        if(Globals.isUpdateNeeded()){
+            updateContainers();
         }
+
 		try{
 		switch(activeTab){
             case 0:
@@ -244,9 +241,10 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
     ///utils
-    private void updateContainers(String s){
+    private void updateContainers(){
         for(LastFMContainer l : lastFMLookups){
-            l.setUser(s);
+            l.updateUrl();
+            l.clear();
         }
     }
     private LastFMContainer activeContainer(){
