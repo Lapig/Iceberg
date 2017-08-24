@@ -21,11 +21,16 @@ android {
         }
 		
     }
+    flavorDimensions("kitkat")
     productFlavors {
-	kitkat{
-			minSdkVersion '19'
-			targetSdkVersion '25'
-		}
+        kitkat {
+            dimension = "kitkat"
+            minSdkVersion '19'
+            targetSdkVersion '25'
+            versionCode 1
+            versionName '1.0'
+            applicationId 'xyz.lapig.iceberg'
+        }
     }
 }
 
